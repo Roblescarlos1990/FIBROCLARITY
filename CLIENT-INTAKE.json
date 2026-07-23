@@ -1,0 +1,124 @@
+{
+  "project": {
+    "client_name": "XYLENS Journal of Medicine & Wellness",
+    "site_slug": "xylens-journal",
+    "template_id": "voltflow-white-label-website",
+    "template_version": "1.0",
+    "product_type": "Editorial learning center"
+  },
+  "company": {
+    "name": "XYLENS Journal of Medicine & Wellness",
+    "short_name": "XYLENS",
+    "tagline": "Where evidence takes root.",
+    "business_type": "Independent health publication",
+    "phone_display": "",
+    "phone_digits": "",
+    "email": "",
+    "security_email": "",
+    "website_url": "https://xylens-journal.charliesgarage.chatgpt.site",
+    "domain": "xylens-journal.charliesgarage.chatgpt.site",
+    "license_number": "",
+    "license_label": "",
+    "service_area": "San Diego, California",
+    "region_description": "Independent medicine, wellness, research, and field journalism with a coastal Southern California perspective."
+  },
+  "branding": {
+    "primary_color": "#090d0c",
+    "secondary_color": "#718f78",
+    "accent_color": "#c7a96b",
+    "silver_color": "#aeb8b8",
+    "logo_primary": "public/favicon.svg",
+    "intro_logo": "public/favicon.svg",
+    "logo_mark": "public/favicon.svg",
+    "document_logo": "public/favicon.svg",
+    "watermark_dark": "public/favicon.svg",
+    "watermark_print": "public/favicon.svg",
+    "public_watermark_opacity": 0.055,
+    "document_watermark_opacity": 0.045,
+    "external_logo_file": ""
+  },
+  "services": {
+    "service_1_name": "Journal",
+    "service_2_name": "Wellness",
+    "service_3_name": "Medicine",
+    "service_4_name": "Research",
+    "service_5_name": "Field Notes",
+    "service_6_name": "Editorial Standard"
+  },
+  "integrations": {
+    "supabase_url": "",
+    "supabase_publishable_key": "",
+    "newsletter_provider": "",
+    "analytics_provider": ""
+  },
+  "deployment": {
+    "allowed_quote_countries": "US",
+    "geo_mode": "monitor"
+  },
+  "publication": {
+    "masthead": "Journal of Medicine & Wellness",
+    "eyebrow": "Independent medicine · research · restorative living",
+    "hero": {
+      "headline_primary": "Where evidence",
+      "headline_accent": "takes root.",
+      "description": "A journal for curious people who want medical rigor without losing sight of nature, culture, and the lived experience of being well.",
+      "primary_action": "Enter the journal",
+      "secondary_action": "Read our editorial standard"
+    },
+    "primary_navigation": [
+      {
+        "label": "Journal",
+        "target": "#journal"
+      },
+      {
+        "label": "Lenses",
+        "target": "#lenses"
+      },
+      {
+        "label": "Our standard",
+        "target": "#standard"
+      }
+    ],
+    "header_action": {
+      "label": "Field Notes",
+      "target": "#newsletter"
+    },
+    "lenses": [
+      {
+        "key": "summer",
+        "lens": "Field Notes",
+        "label": "Journal",
+        "season": "Summer",
+        "number": "01"
+      },
+      {
+        "key": "spring",
+        "lens": "Wellness",
+        "label": "Wellness",
+        "season": "Spring",
+        "number": "02"
+      },
+      {
+        "key": "autumn",
+        "lens": "Medicine",
+        "label": "Medicine",
+        "season": "Autumn",
+        "number": "03"
+      },
+      {
+        "key": "winter",
+        "lens": "Research",
+        "label": "Research",
+        "season": "Winter",
+        "number": "04"
+      }
+    ],
+    "principles": [
+      "Evidence in context",
+      "Whole-person health",
+      "Independent journalism",
+      "Nature as perspective"
+    ],
+    "editorial_disclaimer": "XYLENS publishes educational journalism and is not a substitute for individualized medical advice, diagnosis, or treatment."
+  }
+}
