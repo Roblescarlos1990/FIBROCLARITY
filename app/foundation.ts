@@ -45,7 +45,7 @@ export const foundation = {
     "--foundation-secondary": intake.branding.secondary_color,
     "--foundation-accent": intake.branding.accent_color,
     "--foundation-silver": intake.branding.silver_color,
-  } satisfies FoundationCssProperties,
+    } as FoundationCssProperties,
 };
 
 export const foundationServices = services;
