@@ -14,57 +14,201 @@ type SeasonStyle = {
   leafScale: number;
   light: string;
   ground: string;
+  fog: string;
+  weather: string;
+  particleSize: number;
+  wind: number;
 };
 
 const styles: Record<SeasonKey, SeasonStyle> = {
   spring: {
-    colors: ["#7da66c", "#9bc484", "#5f8f72", "#b8c98c"],
-    leafScale: 0.72,
-    light: "#c6efcf",
-    ground: "#7eaa91",
+    colors: ["#769775", "#95ae83", "#668b70", "#aeb98a"],
+    leafScale: 0.78,
+    light: "#fff0cf",
+    ground: "#a7bea5",
+    fog: "#e9f1e9",
+    weather: "#9db9b6",
+    particleSize: 0.026,
+    wind: 0.85,
   },
   summer: {
-    colors: ["#315d45", "#47785b", "#6d8b4e", "#224d3a"],
+    colors: ["#355f49", "#527a5c", "#75905d", "#294f40"],
     leafScale: 1,
-    light: "#f0d8a4",
-    ground: "#657e67",
+    light: "#ffe4b2",
+    ground: "#8da98d",
+    fog: "#e7f0ed",
+    weather: "#d6bc79",
+    particleSize: 0.032,
+    wind: 0.45,
   },
   autumn: {
-    colors: ["#bd532f", "#d77a32", "#a83d2d", "#d3a247"],
-    leafScale: 0.9,
-    light: "#f4b96a",
-    ground: "#9f6849",
+    colors: ["#b85f37", "#d1843f", "#934530", "#cba34d"],
+    leafScale: 0.88,
+    light: "#ffd4a1",
+    ground: "#c39a72",
+    fog: "#f3e7db",
+    weather: "#c98b4d",
+    particleSize: 0.035,
+    wind: 1.25,
   },
   winter: {
-    colors: ["#9aa7aa", "#72858a", "#b7b9ad", "#63747c"],
-    leafScale: 0.1,
-    light: "#c8dce3",
-    ground: "#75858b",
+    colors: ["#8b9692", "#788987", "#b4afa0", "#657673"],
+    leafScale: 0.06,
+    light: "#d8edf2",
+    ground: "#b9c5c3",
+    fog: "#e9eff0",
+    weather: "#ffffff",
+    particleSize: 0.052,
+    wind: 0.72,
   },
 };
 
-const seedRandom = (() => {
-  let seed = 824731;
+function createRandom(initialSeed: number) {
+  let seed = initialSeed;
   return () => {
     seed = (seed * 16807) % 2147483647;
     return (seed - 1) / 2147483646;
   };
-})();
+}
+
+function createBarkTextures() {
+  const random = createRandom(94381);
+  const width = 512;
+  const height = 1024;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Unable to create bark texture");
+
+  const base = context.createLinearGradient(0, 0, width, 0);
+  base.addColorStop(0, "#473d35");
+  base.addColorStop(0.22, "#6b5746");
+  base.addColorStop(0.5, "#3e352f");
+  base.addColorStop(0.76, "#705b47");
+  base.addColorStop(1, "#3b342f");
+  context.fillStyle = base;
+  context.fillRect(0, 0, width, height);
+
+  for (let x = -12; x < width + 20; x += 10 + random() * 15) {
+    const ridgeWidth = 5 + random() * 15;
+    const ridge = context.createLinearGradient(
+      x - ridgeWidth,
+      0,
+      x + ridgeWidth,
+      0,
+    );
+    ridge.addColorStop(0, "rgba(20, 17, 15, .58)");
+    ridge.addColorStop(0.42, "rgba(139, 111, 82, .3)");
+    ridge.addColorStop(0.7, "rgba(229, 192, 145, .12)");
+    ridge.addColorStop(1, "rgba(24, 20, 17, .65)");
+    context.strokeStyle = ridge;
+    context.lineWidth = ridgeWidth;
+    context.beginPath();
+    context.moveTo(x, -20);
+    for (let y = 0; y <= height + 40; y += 42) {
+      context.lineTo(
+        x + Math.sin(y * 0.018 + random() * 2) * (4 + random() * 8),
+        y,
+      );
+    }
+    context.stroke();
+  }
+
+  for (let i = 0; i < 620; i += 1) {
+    const x = random() * width;
+    const y = random() * height;
+    const length = 4 + random() * 26;
+    context.strokeStyle =
+      random() > 0.45
+        ? `rgba(26, 22, 18, ${0.16 + random() * 0.35})`
+        : `rgba(214, 181, 139, ${0.08 + random() * 0.13})`;
+    context.lineWidth = 0.5 + random() * 1.6;
+    context.beginPath();
+    context.moveTo(x, y);
+    context.lineTo(x + (random() - 0.5) * 8, y + length);
+    context.stroke();
+  }
+
+  const bumpCanvas = document.createElement("canvas");
+  bumpCanvas.width = width;
+  bumpCanvas.height = height;
+  const bumpContext = bumpCanvas.getContext("2d");
+  if (!bumpContext) throw new Error("Unable to create bark bump texture");
+  bumpContext.filter = "grayscale(1) contrast(1.75)";
+  bumpContext.drawImage(canvas, 0, 0);
+
+  const color = new THREE.CanvasTexture(canvas);
+  color.colorSpace = THREE.SRGBColorSpace;
+  color.wrapS = color.wrapT = THREE.RepeatWrapping;
+  color.repeat.set(2.6, 1.5);
+  color.anisotropy = 4;
+
+  const bump = new THREE.CanvasTexture(bumpCanvas);
+  bump.wrapS = bump.wrapT = THREE.RepeatWrapping;
+  bump.repeat.copy(color.repeat);
+  bump.anisotropy = 4;
+
+  return { color, bump };
+}
+
+function createOakLeafGeometry() {
+  const shape = new THREE.Shape();
+  shape.moveTo(0, -0.7);
+  shape.bezierCurveTo(-0.03, -0.56, -0.16, -0.53, -0.13, -0.4);
+  shape.bezierCurveTo(-0.28, -0.4, -0.37, -0.29, -0.27, -0.17);
+  shape.bezierCurveTo(-0.43, -0.14, -0.48, -0.01, -0.33, 0.07);
+  shape.bezierCurveTo(-0.49, 0.16, -0.45, 0.3, -0.28, 0.33);
+  shape.bezierCurveTo(-0.4, 0.46, -0.29, 0.58, -0.12, 0.54);
+  shape.bezierCurveTo(-0.11, 0.68, -0.04, 0.79, 0, 0.88);
+  shape.bezierCurveTo(0.04, 0.79, 0.11, 0.68, 0.12, 0.54);
+  shape.bezierCurveTo(0.29, 0.58, 0.4, 0.46, 0.28, 0.33);
+  shape.bezierCurveTo(0.45, 0.3, 0.49, 0.16, 0.33, 0.07);
+  shape.bezierCurveTo(0.48, -0.01, 0.43, -0.14, 0.27, -0.17);
+  shape.bezierCurveTo(0.37, -0.29, 0.28, -0.4, 0.13, -0.4);
+  shape.bezierCurveTo(0.16, -0.53, 0.03, -0.56, 0, -0.7);
+
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.028,
+    steps: 1,
+    bevelEnabled: true,
+    bevelSegments: 1,
+    bevelSize: 0.018,
+    bevelThickness: 0.012,
+  });
+  geometry.center();
+  geometry.computeVertexNormals();
+  return geometry;
+}
 
 function branchBetween(
   start: THREE.Vector3,
   end: THREE.Vector3,
   radius: number,
   material: THREE.Material,
+  variation: number,
 ) {
   const direction = end.clone().sub(start);
   const length = direction.length();
   const geometry = new THREE.CylinderGeometry(
-    radius * 0.62,
+    radius * 0.6,
     radius,
     length,
-    9,
+    16,
+    5,
   );
+  const positions = geometry.attributes.position;
+  for (let index = 0; index < positions.count; index += 1) {
+    const y = positions.getY(index);
+    const swelling =
+      1 +
+      Math.sin(y * 5.7 + variation) * 0.035 +
+      Math.sin(y * 11.2 - variation) * 0.018;
+    positions.setX(index, positions.getX(index) * swelling);
+    positions.setZ(index, positions.getZ(index) * swelling);
+  }
+  geometry.computeVertexNormals();
+
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.copy(start.clone().add(end).multiplyScalar(0.5));
   mesh.quaternion.setFromUnitVectors(
@@ -72,6 +216,7 @@ function branchBetween(
     direction.normalize(),
   );
   mesh.castShadow = true;
+  mesh.receiveShadow = true;
   return mesh;
 }
 
@@ -86,11 +231,15 @@ export default function OakScene({ season }: OakSceneProps) {
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
-    const initialStyle = styles[seasonRef.current];
 
+    const random = createRandom(824731);
+    const initialStyle = styles[seasonRef.current];
     const scene = new THREE.Scene();
+    const fog = new THREE.FogExp2(initialStyle.fog, 0.038);
+    scene.fog = fog;
+
     const camera = new THREE.PerspectiveCamera(31, 1, 0.1, 100);
-    camera.position.set(0, 2.25, 8.4);
+    camera.position.set(0, 2.4, 8.7);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -103,38 +252,66 @@ export default function OakScene({ season }: OakSceneProps) {
     renderer.toneMappingExposure = 1.05;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setClearColor(0x000000, 0);
     mount.appendChild(renderer.domElement);
 
     const tree = new THREE.Group();
-    tree.position.y = -2.45;
-    tree.rotation.y = -0.22;
+    tree.position.y = -2.5;
+    tree.rotation.y = -0.2;
     scene.add(tree);
 
+    const barkTextures = createBarkTextures();
     const bark = new THREE.MeshStandardMaterial({
-      color: "#554338",
-      roughness: 0.94,
-      metalness: 0.02,
+      color: "#675344",
+      map: barkTextures.color,
+      bumpMap: barkTextures.bump,
+      bumpScale: 0.09,
+      roughness: 0.96,
+      metalness: 0,
     });
-    const barkLight = new THREE.MeshStandardMaterial({
-      color: "#745b45",
-      roughness: 0.88,
+    const youngBark = new THREE.MeshStandardMaterial({
+      color: "#715f4d",
+      map: barkTextures.color,
+      bumpMap: barkTextures.bump,
+      bumpScale: 0.045,
+      roughness: 0.9,
     });
 
     const trunkPoints = [
       new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(0.03, 1.1, 0),
-      new THREE.Vector3(-0.05, 2.2, 0.02),
-      new THREE.Vector3(0.1, 3.25, 0),
-      new THREE.Vector3(0.02, 4.15, -0.05),
+      new THREE.Vector3(0.03, 1.06, 0.01),
+      new THREE.Vector3(-0.06, 2.12, 0.04),
+      new THREE.Vector3(0.11, 3.18, -0.01),
+      new THREE.Vector3(0.01, 4.12, -0.06),
     ];
-    const trunkRadii = [0.38, 0.33, 0.27, 0.19];
+    const trunkRadii = [0.43, 0.37, 0.3, 0.2];
     trunkRadii.forEach((radius, index) => {
       tree.add(
         branchBetween(
           trunkPoints[index],
           trunkPoints[index + 1],
           radius,
-          index % 2 ? barkLight : bark,
+          index > 1 ? youngBark : bark,
+          index * 1.7,
+        ),
+      );
+    });
+
+    const rootEnds = [
+      new THREE.Vector3(-1.3, 0.04, 0.32),
+      new THREE.Vector3(1.18, 0.035, 0.4),
+      new THREE.Vector3(-0.72, 0.03, -0.96),
+      new THREE.Vector3(0.76, 0.03, -1.05),
+      new THREE.Vector3(0.18, 0.02, 1.06),
+    ];
+    rootEnds.forEach((end, index) => {
+      tree.add(
+        branchBetween(
+          new THREE.Vector3(0, 0.2, 0),
+          end,
+          0.2 - index * 0.014,
+          bark,
+          9 + index,
         ),
       );
     });
@@ -142,47 +319,63 @@ export default function OakScene({ season }: OakSceneProps) {
     const branchSpecs: Array<
       [THREE.Vector3, THREE.Vector3, number, number]
     > = [
-      [new THREE.Vector3(-0.02, 1.45, 0), new THREE.Vector3(-1.55, 2.7, 0.18), 0.22, 2],
-      [new THREE.Vector3(-0.85, 2.15, 0.1), new THREE.Vector3(-2.1, 3.05, 0.35), 0.12, 1],
-      [new THREE.Vector3(0.02, 1.85, 0), new THREE.Vector3(1.45, 2.95, 0.15), 0.24, 2],
-      [new THREE.Vector3(0.92, 2.55, 0.1), new THREE.Vector3(2.0, 3.42, 0.4), 0.12, 1],
-      [new THREE.Vector3(-0.03, 2.42, 0), new THREE.Vector3(-1.25, 3.65, -0.25), 0.2, 2],
-      [new THREE.Vector3(-0.72, 3.08, -0.14), new THREE.Vector3(-1.8, 3.94, -0.42), 0.1, 1],
-      [new THREE.Vector3(0.07, 2.72, 0), new THREE.Vector3(1.14, 3.82, -0.35), 0.18, 2],
-      [new THREE.Vector3(0.7, 3.35, -0.22), new THREE.Vector3(1.72, 4.08, -0.38), 0.09, 1],
-      [new THREE.Vector3(0.02, 3.18, 0), new THREE.Vector3(-0.62, 4.38, 0.12), 0.14, 2],
-      [new THREE.Vector3(0.02, 3.55, -0.04), new THREE.Vector3(0.58, 4.58, 0.1), 0.13, 2],
-      [new THREE.Vector3(-0.02, 3.72, -0.03), new THREE.Vector3(-0.15, 4.92, -0.08), 0.12, 2],
-      [new THREE.Vector3(-0.85, 2.22, 0.1), new THREE.Vector3(-1.48, 2.45, -0.82), 0.09, 1],
-      [new THREE.Vector3(0.82, 2.46, 0.08), new THREE.Vector3(1.48, 2.68, -0.76), 0.09, 1],
+      [new THREE.Vector3(-0.02, 1.42, 0), new THREE.Vector3(-1.58, 2.66, 0.2), 0.24, 3],
+      [new THREE.Vector3(-0.86, 2.12, 0.11), new THREE.Vector3(-2.14, 3.02, 0.38), 0.13, 2],
+      [new THREE.Vector3(0.02, 1.8, 0), new THREE.Vector3(1.5, 2.92, 0.18), 0.25, 3],
+      [new THREE.Vector3(0.94, 2.5, 0.12), new THREE.Vector3(2.08, 3.4, 0.44), 0.13, 2],
+      [new THREE.Vector3(-0.03, 2.38, 0), new THREE.Vector3(-1.28, 3.64, -0.3), 0.21, 3],
+      [new THREE.Vector3(-0.74, 3.06, -0.16), new THREE.Vector3(-1.84, 3.95, -0.47), 0.105, 2],
+      [new THREE.Vector3(0.07, 2.68, 0), new THREE.Vector3(1.18, 3.84, -0.38), 0.19, 3],
+      [new THREE.Vector3(0.73, 3.34, -0.24), new THREE.Vector3(1.78, 4.1, -0.42), 0.1, 2],
+      [new THREE.Vector3(0.02, 3.14, 0), new THREE.Vector3(-0.64, 4.4, 0.15), 0.15, 3],
+      [new THREE.Vector3(0.02, 3.52, -0.04), new THREE.Vector3(0.6, 4.6, 0.12), 0.14, 3],
+      [new THREE.Vector3(-0.02, 3.68, -0.03), new THREE.Vector3(-0.16, 4.96, -0.1), 0.13, 3],
+      [new THREE.Vector3(-0.86, 2.2, 0.1), new THREE.Vector3(-1.52, 2.44, -0.88), 0.1, 2],
+      [new THREE.Vector3(0.84, 2.44, 0.09), new THREE.Vector3(1.52, 2.67, -0.82), 0.1, 2],
+      [new THREE.Vector3(-0.2, 3.52, 0), new THREE.Vector3(-1.15, 4.16, 0.72), 0.1, 2],
+      [new THREE.Vector3(0.18, 3.7, 0), new THREE.Vector3(1.04, 4.35, 0.72), 0.095, 2],
     ];
 
     const canopyAnchors: THREE.Vector3[] = [];
-    branchSpecs.forEach(([start, end, radius, twigs]) => {
-      tree.add(branchBetween(start, end, radius, bark));
+    branchSpecs.forEach(([start, end, radius, twigCount], branchIndex) => {
+      tree.add(
+        branchBetween(start, end, radius, youngBark, 14 + branchIndex),
+      );
       canopyAnchors.push(end);
-      for (let i = 0; i < twigs; i += 1) {
+      for (let index = 0; index < twigCount; index += 1) {
         const direction = end.clone().sub(start).normalize();
-        const twigStart = start.clone().lerp(end, 0.58 + i * 0.17);
+        const twigStart = start.clone().lerp(end, 0.5 + index * 0.15);
         const side = new THREE.Vector3(
-          (seedRandom() - 0.5) * 1.1,
-          0.45 + seedRandom() * 0.45,
-          (seedRandom() - 0.5) * 1.25,
+          (random() - 0.5) * 1.1,
+          0.42 + random() * 0.5,
+          (random() - 0.5) * 1.3,
         );
         const twigEnd = twigStart
           .clone()
-          .add(direction.multiplyScalar(0.42))
+          .add(direction.multiplyScalar(0.36))
           .add(side);
-        tree.add(branchBetween(twigStart, twigEnd, radius * 0.48, bark));
+        tree.add(
+          branchBetween(
+            twigStart,
+            twigEnd,
+            radius * 0.42,
+            youngBark,
+            branchIndex * 3 + index,
+          ),
+        );
         canopyAnchors.push(twigEnd);
       }
     });
 
-    const leafCount = 260;
-    const leafGeometry = new THREE.DodecahedronGeometry(0.145, 0);
-    const leafMaterial = new THREE.MeshStandardMaterial({
+    const leafCount = 320;
+    const leafGeometry = createOakLeafGeometry();
+    const leafMaterial = new THREE.MeshPhysicalMaterial({
       color: "#ffffff",
-      roughness: 0.76,
+      roughness: 0.72,
+      metalness: 0,
+      sheen: 0.24,
+      sheenRoughness: 0.85,
+      side: THREE.DoubleSide,
       vertexColors: true,
     });
     const leaves = new THREE.InstancedMesh(
@@ -190,37 +383,49 @@ export default function OakScene({ season }: OakSceneProps) {
       leafMaterial,
       leafCount,
     );
+    leaves.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     leaves.castShadow = true;
     leaves.receiveShadow = true;
     tree.add(leaves);
 
     const leafData = Array.from({ length: leafCount }, (_, index) => {
       const anchor = canopyAnchors[index % canopyAnchors.length];
-      const radius = 0.34 + seedRandom() * 0.74;
+      const cloudRadius = 0.35 + random() * 0.75;
       return {
         position: new THREE.Vector3(
-          anchor.x + (seedRandom() - 0.5) * radius * 1.7,
-          anchor.y + (seedRandom() - 0.5) * radius,
-          anchor.z + (seedRandom() - 0.5) * radius * 1.35,
+          anchor.x + (random() - 0.5) * cloudRadius * 1.7,
+          anchor.y + (random() - 0.5) * cloudRadius,
+          anchor.z + (random() - 0.5) * cloudRadius * 1.35,
         ),
         rotation: new THREE.Euler(
-          seedRandom() * Math.PI,
-          seedRandom() * Math.PI,
-          seedRandom() * Math.PI,
+          (random() - 0.5) * 1.25,
+          random() * Math.PI * 2,
+          (random() - 0.5) * Math.PI,
         ),
-        scale: 0.62 + seedRandom() * 0.8,
-        paletteIndex: Math.floor(seedRandom() * 4),
+        scale: 0.68 + random() * 0.78,
+        paletteIndex: Math.floor(random() * 4),
+        windPhase: random() * Math.PI * 2,
       };
     });
 
+    const paletteColors = Object.fromEntries(
+      Object.entries(styles).map(([key, value]) => [
+        key,
+        value.colors.map((color) => new THREE.Color(color)),
+      ]),
+    ) as Record<SeasonKey, THREE.Color[]>;
+    const currentColors = leafData.map(
+      (leaf) => paletteColors[seasonRef.current][leaf.paletteIndex].clone(),
+    );
+
     const groundMaterial = new THREE.MeshStandardMaterial({
       color: initialStyle.ground,
-      roughness: 0.98,
+      roughness: 1,
       transparent: true,
-      opacity: 0.36,
+      opacity: 0.32,
     });
     const ground = new THREE.Mesh(
-      new THREE.CircleGeometry(2.1, 64),
+      new THREE.CircleGeometry(2.35, 80),
       groundMaterial,
     );
     ground.rotation.x = -Math.PI / 2;
@@ -229,37 +434,116 @@ export default function OakScene({ season }: OakSceneProps) {
     tree.add(ground);
 
     const ringMaterial = new THREE.MeshBasicMaterial({
-      color: "#c9ad71",
+      color: "#b79254",
       transparent: true,
-      opacity: 0.2,
+      opacity: 0.19,
     });
     const ring = new THREE.Mesh(
-      new THREE.RingGeometry(2.32, 2.345, 96),
+      new THREE.RingGeometry(2.55, 2.57, 128),
       ringMaterial,
     );
     ring.rotation.x = -Math.PI / 2;
-    ring.position.y = 0.03;
+    ring.position.y = 0.035;
     tree.add(ring);
 
-    const ambient = new THREE.HemisphereLight("#dcefee", "#2b211c", 2.2);
+    const ambient = new THREE.HemisphereLight("#f7fbf8", "#756759", 2.45);
     scene.add(ambient);
-    const key = new THREE.DirectionalLight(initialStyle.light, 5.5);
-    key.position.set(-3, 7, 5);
+    const key = new THREE.DirectionalLight(initialStyle.light, 4.8);
+    key.position.set(-3.4, 7.2, 5.2);
     key.castShadow = true;
-    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.mapSize.set(1536, 1536);
+    key.shadow.camera.near = 0.1;
+    key.shadow.camera.far = 20;
     scene.add(key);
-    const rim = new THREE.PointLight("#d7b975", 16, 14);
-    rim.position.set(3.6, 3.5, 2.8);
+    const rim = new THREE.PointLight("#bfcfd0", 9, 14);
+    rim.position.set(3.8, 3.8, 3.2);
     scene.add(rim);
+    const goldFill = new THREE.PointLight("#d5b675", 5, 12);
+    goldFill.position.set(-3, 1.8, 4);
+    scene.add(goldFill);
+
+    const rainCount = 92;
+    const rainDrops = Array.from({ length: rainCount }, () => ({
+      x: (random() - 0.5) * 8,
+      y: random() * 8 - 1,
+      z: (random() - 0.5) * 4,
+      length: 0.16 + random() * 0.32,
+      speed: 0.035 + random() * 0.045,
+    }));
+    const rainPositions = new Float32Array(rainCount * 6);
+    const rainGeometry = new THREE.BufferGeometry();
+    const rainAttribute = new THREE.BufferAttribute(rainPositions, 3);
+    rainAttribute.setUsage(THREE.DynamicDrawUsage);
+    rainGeometry.setAttribute("position", rainAttribute);
+    const rainMaterial = new THREE.LineBasicMaterial({
+      color: "#9ab6b8",
+      transparent: true,
+      opacity: seasonRef.current === "spring" ? 0.34 : 0,
+      depthWrite: false,
+    });
+    const rain = new THREE.LineSegments(rainGeometry, rainMaterial);
+    rain.position.y = -0.4;
+    scene.add(rain);
+
+    const particleCount = 170;
+    const particlePositions = new Float32Array(particleCount * 3);
+    for (let index = 0; index < particleCount; index += 1) {
+      particlePositions[index * 3] = (random() - 0.5) * 8;
+      particlePositions[index * 3 + 1] = random() * 7 - 1;
+      particlePositions[index * 3 + 2] = (random() - 0.5) * 4;
+    }
+    const particleGeometry = new THREE.BufferGeometry();
+    const particleAttribute = new THREE.BufferAttribute(particlePositions, 3);
+    particleAttribute.setUsage(THREE.DynamicDrawUsage);
+    particleGeometry.setAttribute("position", particleAttribute);
+    const particleMaterial = new THREE.PointsMaterial({
+      color: initialStyle.weather,
+      size: initialStyle.particleSize,
+      transparent: true,
+      opacity: seasonRef.current === "spring" ? 0.2 : 0.58,
+      depthWrite: false,
+      sizeAttenuation: true,
+    });
+    const particles = new THREE.Points(particleGeometry, particleMaterial);
+    scene.add(particles);
+
+    const fallingCount = 34;
+    const fallingMaterial = new THREE.MeshPhysicalMaterial({
+      color: "#ffffff",
+      roughness: 0.8,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: seasonRef.current === "autumn" ? 0.9 : 0,
+      vertexColors: true,
+    });
+    const fallingLeaves = new THREE.InstancedMesh(
+      leafGeometry,
+      fallingMaterial,
+      fallingCount,
+    );
+    fallingLeaves.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    scene.add(fallingLeaves);
+    const fallingData = Array.from({ length: fallingCount }, (_, index) => {
+      fallingLeaves.setColorAt(
+        index,
+        paletteColors.autumn[index % paletteColors.autumn.length],
+      );
+      return {
+        x: (random() - 0.5) * 6.4,
+        y: random() * 7 - 0.4,
+        z: (random() - 0.5) * 3.2,
+        speed: 0.009 + random() * 0.018,
+        spin: 0.35 + random() * 0.9,
+        phase: random() * Math.PI * 2,
+        scale: 0.11 + random() * 0.08,
+      };
+    });
 
     const dummy = new THREE.Object3D();
-    const currentColors = leafData.map(
-      (_, index) =>
-        new THREE.Color(
-          initialStyle.colors[index % initialStyle.colors.length],
-        ),
-    );
     let currentLeafScale = initialStyle.leafScale;
+    let rainStrength = seasonRef.current === "spring" ? 1 : 0;
+    let fallingStrength = seasonRef.current === "autumn" ? 1 : 0;
+    let currentParticleSize = initialStyle.particleSize;
     let pointerX = 0;
     let pointerY = 0;
     let raf = 0;
@@ -269,6 +553,10 @@ export default function OakScene({ season }: OakSceneProps) {
       const rect = mount.getBoundingClientRect();
       pointerX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
       pointerY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+    };
+    const onPointerLeave = () => {
+      pointerX = 0;
+      pointerY = 0;
     };
 
     const resize = () => {
@@ -282,41 +570,124 @@ export default function OakScene({ season }: OakSceneProps) {
     const observer = new ResizeObserver(resize);
     observer.observe(mount);
     mount.addEventListener("pointermove", onPointerMove);
+    mount.addEventListener("pointerleave", onPointerLeave);
     resize();
 
     const animate = () => {
       const elapsed = clock.getElapsedTime();
-      const target = styles[seasonRef.current];
-      currentLeafScale += (target.leafScale - currentLeafScale) * 0.035;
+      const seasonKey = seasonRef.current;
+      const target = styles[seasonKey];
+      const targetPalette = paletteColors[seasonKey];
+      currentLeafScale += (target.leafScale - currentLeafScale) * 0.026;
+      rainStrength += ((seasonKey === "spring" ? 1 : 0) - rainStrength) * 0.025;
+      fallingStrength +=
+        ((seasonKey === "autumn" ? 1 : 0) - fallingStrength) * 0.025;
+      currentParticleSize +=
+        (target.particleSize - currentParticleSize) * 0.024;
 
       leafData.forEach((leaf, index) => {
-        const targetColor = new THREE.Color(
-          target.colors[leaf.paletteIndex % target.colors.length],
+        currentColors[index].lerp(
+          targetPalette[leaf.paletteIndex % targetPalette.length],
+          0.028,
         );
-        currentColors[index].lerp(targetColor, 0.035);
         leaves.setColorAt(index, currentColors[index]);
         dummy.position.copy(leaf.position);
-        dummy.position.y += Math.sin(elapsed * 0.72 + index * 0.7) * 0.018;
+        const wind =
+          Math.sin(elapsed * (0.7 + target.wind * 0.18) + leaf.windPhase) *
+          target.wind;
+        dummy.position.x += wind * 0.016;
+        dummy.position.y += Math.sin(elapsed * 0.55 + index * 0.41) * 0.012;
         dummy.rotation.copy(leaf.rotation);
-        dummy.rotation.y += Math.sin(elapsed * 0.46 + index) * 0.08;
-        const winterVariation =
-          seasonRef.current === "winter" && index % 12 !== 0 ? 0.08 : 1;
-        const scale = leaf.scale * currentLeafScale * winterVariation;
-        dummy.scale.set(scale * 1.2, scale * 0.7, scale);
+        dummy.rotation.y += wind * 0.12;
+        dummy.rotation.z += wind * 0.06;
+        const winterKeep =
+          seasonKey === "winter" && index % 17 !== 0 ? 0.035 : 1;
+        const scale = leaf.scale * currentLeafScale * winterKeep;
+        dummy.scale.set(scale * 0.31, scale * 0.43, scale * 0.31);
         dummy.updateMatrix();
         leaves.setMatrixAt(index, dummy.matrix);
       });
       leaves.instanceMatrix.needsUpdate = true;
       if (leaves.instanceColor) leaves.instanceColor.needsUpdate = true;
 
-      key.color.lerp(new THREE.Color(target.light), 0.025);
-      groundMaterial.color.lerp(new THREE.Color(target.ground), 0.025);
+      rainDrops.forEach((drop, index) => {
+        drop.y -= drop.speed * (0.45 + rainStrength * 1.4);
+        drop.x -= 0.009 * rainStrength;
+        if (drop.y < -1.5) {
+          drop.y = 7;
+          drop.x = (random() - 0.5) * 8;
+        }
+        const offset = index * 6;
+        rainPositions[offset] = drop.x;
+        rainPositions[offset + 1] = drop.y;
+        rainPositions[offset + 2] = drop.z;
+        rainPositions[offset + 3] = drop.x - 0.035 * rainStrength;
+        rainPositions[offset + 4] = drop.y - drop.length;
+        rainPositions[offset + 5] = drop.z;
+      });
+      rainAttribute.needsUpdate = true;
+      rainMaterial.opacity += (rainStrength * 0.34 - rainMaterial.opacity) * 0.04;
+
+      for (let index = 0; index < particleCount; index += 1) {
+        const offset = index * 3;
+        const direction = seasonKey === "summer" ? 1 : -1;
+        const speed =
+          seasonKey === "winter"
+            ? 0.008
+            : seasonKey === "autumn"
+              ? 0.012
+              : 0.0035;
+        particlePositions[offset + 1] += direction * speed;
+        particlePositions[offset] +=
+          Math.sin(elapsed * 0.4 + index) * target.wind * 0.0008;
+        if (particlePositions[offset + 1] < -1.5) {
+          particlePositions[offset + 1] = 6.4;
+        }
+        if (particlePositions[offset + 1] > 6.5) {
+          particlePositions[offset + 1] = -1.2;
+        }
+      }
+      particleAttribute.needsUpdate = true;
+      particleMaterial.color.lerp(new THREE.Color(target.weather), 0.025);
+      particleMaterial.size = currentParticleSize;
+      const targetParticleOpacity =
+        seasonKey === "spring" ? 0.16 : seasonKey === "summer" ? 0.38 : 0.66;
+      particleMaterial.opacity +=
+        (targetParticleOpacity - particleMaterial.opacity) * 0.03;
+
+      fallingData.forEach((leaf, index) => {
+        leaf.y -= leaf.speed * (0.4 + fallingStrength);
+        leaf.x += Math.sin(elapsed * 0.9 + leaf.phase) * 0.004;
+        if (leaf.y < -1.5) {
+          leaf.y = 6.2;
+          leaf.x = (random() - 0.5) * 6.4;
+        }
+        dummy.position.set(leaf.x, leaf.y, leaf.z);
+        dummy.rotation.set(
+          elapsed * leaf.spin * 0.6 + leaf.phase,
+          elapsed * leaf.spin,
+          elapsed * leaf.spin * 0.4,
+        );
+        const scale = leaf.scale * fallingStrength;
+        dummy.scale.set(scale, scale * 1.3, scale);
+        dummy.updateMatrix();
+        fallingLeaves.setMatrixAt(index, dummy.matrix);
+      });
+      fallingLeaves.instanceMatrix.needsUpdate = true;
+      fallingMaterial.opacity +=
+        (fallingStrength * 0.9 - fallingMaterial.opacity) * 0.04;
+
+      key.color.lerp(new THREE.Color(target.light), 0.02);
+      groundMaterial.color.lerp(new THREE.Color(target.ground), 0.022);
+      fog.color.lerp(new THREE.Color(target.fog), 0.022);
+      fog.density +=
+        ((seasonKey === "winter" ? 0.052 : 0.038) - fog.density) * 0.02;
       tree.rotation.y +=
-        (-0.22 + pointerX * 0.095 - tree.rotation.y) * 0.035;
+        (-0.2 + pointerX * 0.1 - tree.rotation.y) * 0.032;
       tree.rotation.x +=
-        (pointerY * 0.025 - tree.rotation.x) * 0.035;
-      tree.position.y = -2.45 + Math.sin(elapsed * 0.38) * 0.025;
-      ringMaterial.opacity = 0.14 + Math.sin(elapsed * 0.7) * 0.05;
+        (pointerY * 0.024 - tree.rotation.x) * 0.032;
+      tree.position.y = -2.5 + Math.sin(elapsed * 0.34) * 0.022;
+      ringMaterial.opacity = 0.13 + Math.sin(elapsed * 0.62) * 0.045;
 
       renderer.render(scene, camera);
       raf = requestAnimationFrame(animate);
@@ -327,15 +698,26 @@ export default function OakScene({ season }: OakSceneProps) {
       cancelAnimationFrame(raf);
       observer.disconnect();
       mount.removeEventListener("pointermove", onPointerMove);
+      mount.removeEventListener("pointerleave", onPointerLeave);
+      const geometries = new Set<THREE.BufferGeometry>();
+      const materials = new Set<THREE.Material>();
       scene.traverse((object) => {
         if (object instanceof THREE.Mesh) {
-          object.geometry.dispose();
-          const materials = Array.isArray(object.material)
+          geometries.add(object.geometry);
+          const meshMaterials = Array.isArray(object.material)
             ? object.material
             : [object.material];
-          materials.forEach((material) => material.dispose());
+          meshMaterials.forEach((material) => materials.add(material));
+        }
+        if (object instanceof THREE.Points || object instanceof THREE.Line) {
+          geometries.add(object.geometry);
+          materials.add(object.material);
         }
       });
+      geometries.forEach((geometry) => geometry.dispose());
+      materials.forEach((material) => material.dispose());
+      barkTextures.color.dispose();
+      barkTextures.bump.dispose();
       renderer.dispose();
       renderer.domElement.remove();
     };
@@ -346,7 +728,7 @@ export default function OakScene({ season }: OakSceneProps) {
       ref={mountRef}
       className="oak-scene"
       role="img"
-      aria-label={`An interactive oak tree shown in ${season}`}
+      aria-label={`A realistic interactive oak tree moving through ${season} weather`}
     />
   );
 }
