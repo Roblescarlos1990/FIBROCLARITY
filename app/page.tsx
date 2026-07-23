@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Image from "next/image";
+import { useCallback, useMemo, useState } from "react";
+import IntroSequence from "./IntroSequence";
 import OakScene, { type SeasonKey } from "./OakScene";
 import { articles, lensCopy, type Lens } from "./content";
 import { foundation, type FoundationLens } from "./foundation";
@@ -11,6 +13,28 @@ const categories = [
   ...Array.from(new Set(seasonOptions.map((option) => option.lens))),
 ] as Array<"All" | Lens>;
 
+const weatherCopy: Record<
+  SeasonKey,
+  { title: string; detail: string }
+> = {
+  spring: {
+    title: "Coastal rain",
+    detail: "New leaves · fine mist · quick light",
+  },
+  summer: {
+    title: "Warm marine air",
+    detail: "Deep canopy · sun motes · soft breeze",
+  },
+  autumn: {
+    title: "Dry turning wind",
+    detail: "Falling oak leaves · amber light",
+  },
+  winter: {
+    title: "Silver weather",
+    detail: "Bare structure · snow drift · low fog",
+  },
+};
+
 function Brand() {
   const { company, publication } = foundation;
   return (
@@ -20,7 +44,12 @@ function Brand() {
       aria-label={`${company.short_name} home`}
     >
       <span className="brand-mark" aria-hidden="true">
-        {company.short_name.charAt(0)}
+        <Image
+          src="/xylens-oak-mark.svg"
+          alt=""
+          width={42}
+          height={42}
+        />
       </span>
       <span>
         <strong>{company.short_name}</strong>
@@ -39,6 +68,7 @@ function Arrow() {
 }
 
 export default function Home() {
+  const [introComplete, setIntroComplete] = useState(false);
   const [activeSeason, setActiveSeason] = useState<SeasonKey>("summer");
   const [activeCategory, setActiveCategory] = useState<"All" | Lens>("All");
   const [query, setQuery] = useState("");
@@ -48,7 +78,9 @@ export default function Home() {
     (item) => item.key === activeSeason,
   );
   const current = seasonOptions[seasonIndex];
+  const weather = weatherCopy[activeSeason];
   const featured = articles.filter((article) => article.featured);
+  const completeIntro = useCallback(() => setIntroComplete(true), []);
 
   const filteredArticles = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -70,6 +102,8 @@ export default function Home() {
   };
 
   return (
+    <>
+      {!introComplete && <IntroSequence onComplete={completeIntro} />}
     <main
       id="top"
       className="site-shell"
@@ -136,6 +170,13 @@ export default function Home() {
             <p className="interaction-note">
               Move across the canopy · choose a lens below
             </p>
+            <div className="weather-readout" aria-live="polite">
+              <span aria-hidden="true" />
+              <p>
+                {weather.title}
+                <small>{weather.detail}</small>
+              </p>
+            </div>
           </div>
         </div>
 
@@ -450,5 +491,6 @@ export default function Home() {
         </div>
       </footer>
     </main>
+    </>
   );
 }
