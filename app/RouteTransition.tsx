@@ -1,0 +1,214 @@
+"use client";
+
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  type CSSProperties,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+type TransitionPhase = "idle" | "leaving" | "entering";
+
+type RouteTransitionDetail = {
+  href: string;
+};
+
+type TransitionTheme = {
+  label: string;
+  accent: string;
+  deep: string;
+  wash: string;
+};
+
+type TransitionCssProperties = CSSProperties & {
+  "--route-accent": string;
+  "--route-deep": string;
+  "--route-wash": string;
+};
+
+const themes: Record<string, TransitionTheme> = {
+  spring: {
+    label: "Wellness · Spring",
+    accent: "#7fa58f",
+    deep: "#274b42",
+    wash: "#e3eee5",
+  },
+  summer: {
+    label: "Journal · Summer",
+    accent: "#6c9ba0",
+    deep: "#264a4d",
+    wash: "#dfebea",
+  },
+  autumn: {
+    label: "Medicine · Autumn",
+    accent: "#bd754c",
+    deep: "#633d30",
+    wash: "#f0dfd2",
+  },
+  winter: {
+    label: "Research · Winter",
+    accent: "#9aafb4",
+    deep: "#334d53",
+    wash: "#e4ebec",
+  },
+  journal: {
+    label: "XYLENS · The Journal",
+    accent: "#b79254",
+    deep: "#213d38",
+    wash: "#f3f0e7",
+  },
+};
+
+function resolveTheme(pathname: string) {
+  const season = Object.keys(themes).find(
+    (key) => key !== "journal" && pathname.includes(`/seasons/${key}`),
+  );
+  return themes[season || "journal"];
+}
+
+export function navigateWithTransition(href: string) {
+  window.dispatchEvent(
+    new CustomEvent<RouteTransitionDetail>("xylens:navigate", {
+      detail: { href },
+    }),
+  );
+}
+
+export default function RouteTransition() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [phase, setPhase] = useState<TransitionPhase>("idle");
+  const [theme, setTheme] = useState<TransitionTheme>(() =>
+    resolveTheme(pathname),
+  );
+  const phaseRef = useRef<TransitionPhase>("idle");
+  const previousPathRef = useRef(pathname);
+  const leaveTimerRef = useRef<number | null>(null);
+  const enterTimerRef = useRef<number | null>(null);
+  const failsafeTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (previousPathRef.current === pathname) return;
+    previousPathRef.current = pathname;
+    phaseRef.current = "entering";
+    setPhase("entering");
+    setTheme(resolveTheme(pathname));
+
+    if (failsafeTimerRef.current) {
+      window.clearTimeout(failsafeTimerRef.current);
+      failsafeTimerRef.current = null;
+    }
+    enterTimerRef.current = window.setTimeout(() => {
+      phaseRef.current = "idle";
+      setPhase("idle");
+    }, 920);
+
+    return () => {
+      if (enterTimerRef.current) window.clearTimeout(enterTimerRef.current);
+    };
+  }, [pathname]);
+
+  useEffect(() => {
+    const beginNavigation = (href: string) => {
+      const url = new URL(href, window.location.href);
+      if (url.origin !== window.location.origin) return;
+      if (phaseRef.current !== "idle") return;
+
+      const destination = `${url.pathname}${url.search}${url.hash}`;
+      phaseRef.current = "leaving";
+      setTheme(resolveTheme(url.pathname));
+      setPhase("leaving");
+
+      leaveTimerRef.current = window.setTimeout(() => {
+        router.push(destination);
+        failsafeTimerRef.current = window.setTimeout(() => {
+          phaseRef.current = "entering";
+          setPhase("entering");
+          window.setTimeout(() => {
+            phaseRef.current = "idle";
+            setPhase("idle");
+          }, 900);
+        }, 2200);
+      }, 680);
+    };
+
+    const onDocumentClick = (event: MouseEvent) => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const anchor = target.closest<HTMLAnchorElement>("a[href]");
+      if (
+        !anchor ||
+        anchor.target === "_blank" ||
+        anchor.hasAttribute("download")
+      ) {
+        return;
+      }
+
+      const url = new URL(anchor.href, window.location.href);
+      if (url.origin !== window.location.origin) return;
+      const sameDocument =
+        url.pathname === window.location.pathname &&
+        url.search === window.location.search;
+      if (sameDocument) return;
+
+      event.preventDefault();
+      beginNavigation(url.href);
+    };
+
+    const onRequestedNavigation = (event: Event) => {
+      const navigationEvent =
+        event as CustomEvent<RouteTransitionDetail>;
+      beginNavigation(navigationEvent.detail.href);
+    };
+
+    document.addEventListener("click", onDocumentClick, true);
+    window.addEventListener("xylens:navigate", onRequestedNavigation);
+    return () => {
+      document.removeEventListener("click", onDocumentClick, true);
+      window.removeEventListener("xylens:navigate", onRequestedNavigation);
+      if (leaveTimerRef.current) window.clearTimeout(leaveTimerRef.current);
+      if (enterTimerRef.current) window.clearTimeout(enterTimerRef.current);
+      if (failsafeTimerRef.current) {
+        window.clearTimeout(failsafeTimerRef.current);
+      }
+    };
+  }, [router]);
+
+  const transitionStyle = {
+    "--route-accent": theme.accent,
+    "--route-deep": theme.deep,
+    "--route-wash": theme.wash,
+  } as TransitionCssProperties;
+
+  return (
+    <div
+      className={`route-transition is-${phase}`}
+      style={transitionStyle}
+      aria-hidden="true"
+    >
+      <span className="route-shutter route-shutter-one" />
+      <span className="route-shutter route-shutter-two" />
+      <span className="route-shutter route-shutter-three" />
+      <div className="route-transition-lockup">
+        <span className="route-transition-rule" />
+        <Image src="/xylens-lens-mark.svg" alt="" width={84} height={84} />
+        <strong>XYLENS</strong>
+        <small>{theme.label}</small>
+      </div>
+      <p>Refocusing the journal</p>
+    </div>
+  );
+}

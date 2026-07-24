@@ -8,9 +8,17 @@ type IntroSequenceProps = {
 };
 
 export default function IntroSequence({ onComplete }: IntroSequenceProps) {
+  const [ready, setReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
+    if (window.sessionStorage.getItem("xylens:intro-seen")) {
+      onComplete();
+      return;
+    }
+    window.sessionStorage.setItem("xylens:intro-seen", "true");
+    const readyFrame = window.requestAnimationFrame(() => setReady(true));
+
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -26,6 +34,7 @@ export default function IntroSequence({ onComplete }: IntroSequenceProps) {
     );
 
     return () => {
+      window.cancelAnimationFrame(readyFrame);
       window.clearTimeout(revealTimer);
       window.clearTimeout(completeTimer);
       document.body.style.overflow = previousOverflow;
@@ -37,6 +46,8 @@ export default function IntroSequence({ onComplete }: IntroSequenceProps) {
     setLeaving(true);
     window.setTimeout(onComplete, 540);
   };
+
+  if (!ready) return null;
 
   return (
     <div

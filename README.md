@@ -18,6 +18,11 @@ faceted evidence core, botanical specimen fragments, droplets, and atmospheric
 particles. Pointer movement and editorial-lens selection alter the composition
 without sacrificing its light coastal palette.
 
+Internal navigation uses a destination-aware cinematic shutter transition, and
+the full opening ident plays once per browser session. Homepage, seasonal media,
+article, evidence, and related-story surfaces share a refined glass-and-metal
+editorial tile system.
+
 The previous oak prototype remains in `app/OakScene.tsx` as an inactive concept
 for possible Blender/GLB exploration. It is not imported by the live website.
 
