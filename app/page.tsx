@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import IntroSequence from "./IntroSequence";
 import OakScene, { type SeasonKey } from "./OakScene";
 import { articles, lensCopy, type Lens } from "./content";
@@ -68,6 +69,7 @@ function Arrow() {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [introComplete, setIntroComplete] = useState(false);
   const [activeSeason, setActiveSeason] = useState<SeasonKey>("summer");
   const [activeCategory, setActiveCategory] = useState<"All" | Lens>("All");
@@ -99,6 +101,7 @@ export default function Home() {
   const selectLens = (option: FoundationLens) => {
     setActiveSeason(option.key);
     setActiveCategory(option.lens);
+    router.push(`/seasons/${option.key}`);
   };
 
   return (
