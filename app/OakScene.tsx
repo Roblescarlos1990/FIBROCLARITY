@@ -4,9 +4,11 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 export type SeasonKey = "spring" | "summer" | "autumn" | "winter";
+type LensKey = "journal" | "wellness" | "medicine" | "research";
 
 type OakSceneProps = {
-  season: SeasonKey;
+  season: SeasonKey | LensKey | Capitalize<LensKey>;
+  className?: string;
 };
 
 type SeasonStyle = {
@@ -18,6 +20,10 @@ type SeasonStyle = {
   weather: string;
   particleSize: number;
   wind: number;
+  barkTint: string;
+  barkRoughness: number;
+  barkClearcoat: number;
+  leafRoughness: number;
 };
 
 const styles: Record<SeasonKey, SeasonStyle> = {
@@ -30,6 +36,10 @@ const styles: Record<SeasonKey, SeasonStyle> = {
     weather: "#9db9b6",
     particleSize: 0.026,
     wind: 0.85,
+    barkTint: "#d9e0d5",
+    barkRoughness: 0.82,
+    barkClearcoat: 0.12,
+    leafRoughness: 0.58,
   },
   summer: {
     colors: ["#355f49", "#527a5c", "#75905d", "#294f40"],
@@ -40,6 +50,10 @@ const styles: Record<SeasonKey, SeasonStyle> = {
     weather: "#d6bc79",
     particleSize: 0.032,
     wind: 0.45,
+    barkTint: "#e1d5c5",
+    barkRoughness: 0.9,
+    barkClearcoat: 0.03,
+    leafRoughness: 0.7,
   },
   autumn: {
     colors: ["#b85f37", "#d1843f", "#934530", "#cba34d"],
@@ -50,6 +64,10 @@ const styles: Record<SeasonKey, SeasonStyle> = {
     weather: "#c98b4d",
     particleSize: 0.035,
     wind: 1.25,
+    barkTint: "#e0c5b2",
+    barkRoughness: 0.93,
+    barkClearcoat: 0.02,
+    leafRoughness: 0.76,
   },
   winter: {
     colors: ["#8b9692", "#788987", "#b4afa0", "#657673"],
@@ -60,8 +78,57 @@ const styles: Record<SeasonKey, SeasonStyle> = {
     weather: "#ffffff",
     particleSize: 0.052,
     wind: 0.72,
+    barkTint: "#dce5e6",
+    barkRoughness: 0.67,
+    barkClearcoat: 0.28,
+    leafRoughness: 0.82,
   },
 };
+
+const lensSeasonMap: Record<LensKey, SeasonKey> = {
+  journal: "summer",
+  wellness: "spring",
+  medicine: "autumn",
+  research: "winter",
+};
+
+const texturePaths = {
+  bark: {
+    spring: "/textures/oak/bark_spring_albedo.jpg",
+    summer: "/textures/oak/bark_summer_albedo.jpg",
+    autumn: "/textures/oak/bark_autumn_albedo.jpg",
+    winter: "/textures/oak/bark_winter_albedo.jpg",
+  },
+  leaf: {
+    spring: "/textures/oak/leaf_spring_albedo.jpg",
+    summer: "/textures/oak/leaf_summer_albedo.jpg",
+    autumn: "/textures/oak/leaf_autumn_albedo.jpg",
+    winter: "/textures/oak/leaf_winter_albedo.jpg",
+  },
+  ground: "/textures/oak/ground_litter_albedo.jpg",
+} satisfies {
+  bark: Record<SeasonKey, string>;
+  leaf: Record<SeasonKey, string>;
+  ground: string;
+};
+
+function resolveSeason(
+  season: OakSceneProps["season"],
+): SeasonKey {
+  const normalized = season.toLowerCase();
+  if (normalized in lensSeasonMap) {
+    return lensSeasonMap[normalized as LensKey];
+  }
+  if (
+    normalized === "spring" ||
+    normalized === "summer" ||
+    normalized === "autumn" ||
+    normalized === "winter"
+  ) {
+    return normalized;
+  }
+  return "summer";
+}
 
 function createRandom(initialSeed: number) {
   let seed = initialSeed;
@@ -69,87 +136,6 @@ function createRandom(initialSeed: number) {
     seed = (seed * 16807) % 2147483647;
     return (seed - 1) / 2147483646;
   };
-}
-
-function createBarkTextures() {
-  const random = createRandom(94381);
-  const width = 512;
-  const height = 1024;
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Unable to create bark texture");
-
-  const base = context.createLinearGradient(0, 0, width, 0);
-  base.addColorStop(0, "#473d35");
-  base.addColorStop(0.22, "#6b5746");
-  base.addColorStop(0.5, "#3e352f");
-  base.addColorStop(0.76, "#705b47");
-  base.addColorStop(1, "#3b342f");
-  context.fillStyle = base;
-  context.fillRect(0, 0, width, height);
-
-  for (let x = -12; x < width + 20; x += 10 + random() * 15) {
-    const ridgeWidth = 5 + random() * 15;
-    const ridge = context.createLinearGradient(
-      x - ridgeWidth,
-      0,
-      x + ridgeWidth,
-      0,
-    );
-    ridge.addColorStop(0, "rgba(20, 17, 15, .58)");
-    ridge.addColorStop(0.42, "rgba(139, 111, 82, .3)");
-    ridge.addColorStop(0.7, "rgba(229, 192, 145, .12)");
-    ridge.addColorStop(1, "rgba(24, 20, 17, .65)");
-    context.strokeStyle = ridge;
-    context.lineWidth = ridgeWidth;
-    context.beginPath();
-    context.moveTo(x, -20);
-    for (let y = 0; y <= height + 40; y += 42) {
-      context.lineTo(
-        x + Math.sin(y * 0.018 + random() * 2) * (4 + random() * 8),
-        y,
-      );
-    }
-    context.stroke();
-  }
-
-  for (let i = 0; i < 620; i += 1) {
-    const x = random() * width;
-    const y = random() * height;
-    const length = 4 + random() * 26;
-    context.strokeStyle =
-      random() > 0.45
-        ? `rgba(26, 22, 18, ${0.16 + random() * 0.35})`
-        : `rgba(214, 181, 139, ${0.08 + random() * 0.13})`;
-    context.lineWidth = 0.5 + random() * 1.6;
-    context.beginPath();
-    context.moveTo(x, y);
-    context.lineTo(x + (random() - 0.5) * 8, y + length);
-    context.stroke();
-  }
-
-  const bumpCanvas = document.createElement("canvas");
-  bumpCanvas.width = width;
-  bumpCanvas.height = height;
-  const bumpContext = bumpCanvas.getContext("2d");
-  if (!bumpContext) throw new Error("Unable to create bark bump texture");
-  bumpContext.filter = "grayscale(1) contrast(1.75)";
-  bumpContext.drawImage(canvas, 0, 0);
-
-  const color = new THREE.CanvasTexture(canvas);
-  color.colorSpace = THREE.SRGBColorSpace;
-  color.wrapS = color.wrapT = THREE.RepeatWrapping;
-  color.repeat.set(2.6, 1.5);
-  color.anisotropy = 4;
-
-  const bump = new THREE.CanvasTexture(bumpCanvas);
-  bump.wrapS = bump.wrapT = THREE.RepeatWrapping;
-  bump.repeat.copy(color.repeat);
-  bump.anisotropy = 4;
-
-  return { color, bump };
 }
 
 function createOakLeafGeometry() {
@@ -220,13 +206,14 @@ function branchBetween(
   return mesh;
 }
 
-export default function OakScene({ season }: OakSceneProps) {
+export default function OakScene({ season, className }: OakSceneProps) {
   const mountRef = useRef<HTMLDivElement>(null);
-  const seasonRef = useRef(season);
+  const resolvedSeason = resolveSeason(season);
+  const seasonRef = useRef<SeasonKey>(resolvedSeason);
 
   useEffect(() => {
-    seasonRef.current = season;
-  }, [season]);
+    seasonRef.current = resolvedSeason;
+  }, [resolvedSeason]);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -255,26 +242,64 @@ export default function OakScene({ season }: OakSceneProps) {
     renderer.setClearColor(0x000000, 0);
     mount.appendChild(renderer.domElement);
 
+    const textureLoader = new THREE.TextureLoader();
+    const maxAnisotropy = Math.min(
+      renderer.capabilities.getMaxAnisotropy(),
+      8,
+    );
+    const loadTexture = (
+      path: string,
+      repeatX: number,
+      repeatY: number,
+    ) => {
+      const texture = textureLoader.load(path);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(repeatX, repeatY);
+      texture.anisotropy = maxAnisotropy;
+      return texture;
+    };
+    const barkMaps = Object.fromEntries(
+      (Object.keys(texturePaths.bark) as SeasonKey[]).map((key) => [
+        key,
+        loadTexture(texturePaths.bark[key], 2.4, 3.8),
+      ]),
+    ) as Record<SeasonKey, THREE.Texture>;
+    const leafMaps = Object.fromEntries(
+      (Object.keys(texturePaths.leaf) as SeasonKey[]).map((key) => [
+        key,
+        loadTexture(texturePaths.leaf[key], 1, 1),
+      ]),
+    ) as Record<SeasonKey, THREE.Texture>;
+    Object.values(leafMaps).forEach((texture) => {
+      texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+    });
+    const groundTexture = loadTexture(texturePaths.ground, 2.2, 2.2);
+
     const tree = new THREE.Group();
     tree.position.y = -2.5;
     tree.rotation.y = -0.2;
     scene.add(tree);
 
-    const barkTextures = createBarkTextures();
-    const bark = new THREE.MeshStandardMaterial({
-      color: "#675344",
-      map: barkTextures.color,
-      bumpMap: barkTextures.bump,
-      bumpScale: 0.09,
-      roughness: 0.96,
+    const bark = new THREE.MeshPhysicalMaterial({
+      color: initialStyle.barkTint,
+      map: barkMaps[seasonRef.current],
+      bumpMap: barkMaps[seasonRef.current],
+      bumpScale: 0.115,
+      roughness: initialStyle.barkRoughness,
       metalness: 0,
+      clearcoat: initialStyle.barkClearcoat,
+      clearcoatRoughness: 0.48,
     });
-    const youngBark = new THREE.MeshStandardMaterial({
-      color: "#715f4d",
-      map: barkTextures.color,
-      bumpMap: barkTextures.bump,
-      bumpScale: 0.045,
-      roughness: 0.9,
+    const youngBark = new THREE.MeshPhysicalMaterial({
+      color: initialStyle.barkTint,
+      map: barkMaps[seasonRef.current],
+      bumpMap: barkMaps[seasonRef.current],
+      bumpScale: 0.07,
+      roughness: Math.max(0.58, initialStyle.barkRoughness - 0.06),
+      metalness: 0,
+      clearcoat: initialStyle.barkClearcoat * 0.75,
+      clearcoatRoughness: 0.52,
     });
 
     const trunkPoints = [
@@ -371,10 +396,18 @@ export default function OakScene({ season }: OakSceneProps) {
     const leafGeometry = createOakLeafGeometry();
     const leafMaterial = new THREE.MeshPhysicalMaterial({
       color: "#ffffff",
-      roughness: 0.72,
+      map: leafMaps[seasonRef.current],
+      roughness: initialStyle.leafRoughness,
       metalness: 0,
       sheen: 0.24,
       sheenRoughness: 0.85,
+      clearcoat:
+        seasonRef.current === "winter"
+          ? 0.16
+          : seasonRef.current === "spring"
+            ? 0.08
+            : 0.02,
+      clearcoatRoughness: 0.44,
       side: THREE.DoubleSide,
       vertexColors: true,
     });
@@ -420,9 +453,10 @@ export default function OakScene({ season }: OakSceneProps) {
 
     const groundMaterial = new THREE.MeshStandardMaterial({
       color: initialStyle.ground,
+      map: groundTexture,
       roughness: 1,
       transparent: true,
-      opacity: 0.32,
+      opacity: 0.42,
     });
     const ground = new THREE.Mesh(
       new THREE.CircleGeometry(2.35, 80),
@@ -510,6 +544,7 @@ export default function OakScene({ season }: OakSceneProps) {
     const fallingCount = 34;
     const fallingMaterial = new THREE.MeshPhysicalMaterial({
       color: "#ffffff",
+      map: leafMaps.autumn,
       roughness: 0.8,
       side: THREE.DoubleSide,
       transparent: true,
@@ -544,6 +579,8 @@ export default function OakScene({ season }: OakSceneProps) {
     let rainStrength = seasonRef.current === "spring" ? 1 : 0;
     let fallingStrength = seasonRef.current === "autumn" ? 1 : 0;
     let currentParticleSize = initialStyle.particleSize;
+    let appliedBarkSeason = seasonRef.current;
+    let appliedLeafSeason = seasonRef.current;
     let pointerX = 0;
     let pointerY = 0;
     let raf = 0;
@@ -578,6 +615,20 @@ export default function OakScene({ season }: OakSceneProps) {
       const seasonKey = seasonRef.current;
       const target = styles[seasonKey];
       const targetPalette = paletteColors[seasonKey];
+      if (appliedBarkSeason !== seasonKey) {
+        bark.map = barkMaps[seasonKey];
+        bark.bumpMap = barkMaps[seasonKey];
+        youngBark.map = barkMaps[seasonKey];
+        youngBark.bumpMap = barkMaps[seasonKey];
+        bark.needsUpdate = true;
+        youngBark.needsUpdate = true;
+        appliedBarkSeason = seasonKey;
+      }
+      if (appliedLeafSeason !== seasonKey) {
+        leafMaterial.map = leafMaps[seasonKey];
+        leafMaterial.needsUpdate = true;
+        appliedLeafSeason = seasonKey;
+      }
       currentLeafScale += (target.leafScale - currentLeafScale) * 0.026;
       rainStrength += ((seasonKey === "spring" ? 1 : 0) - rainStrength) * 0.025;
       fallingStrength +=
@@ -678,6 +729,24 @@ export default function OakScene({ season }: OakSceneProps) {
         (fallingStrength * 0.9 - fallingMaterial.opacity) * 0.04;
 
       key.color.lerp(new THREE.Color(target.light), 0.02);
+      bark.color.lerp(new THREE.Color(target.barkTint), 0.024);
+      youngBark.color.lerp(new THREE.Color(target.barkTint), 0.024);
+      bark.roughness +=
+        (target.barkRoughness - bark.roughness) * 0.024;
+      youngBark.roughness +=
+        (Math.max(0.58, target.barkRoughness - 0.06) -
+          youngBark.roughness) *
+        0.024;
+      bark.clearcoat +=
+        (target.barkClearcoat - bark.clearcoat) * 0.024;
+      youngBark.clearcoat +=
+        (target.barkClearcoat * 0.75 - youngBark.clearcoat) * 0.024;
+      leafMaterial.roughness +=
+        (target.leafRoughness - leafMaterial.roughness) * 0.026;
+      const leafClearcoatTarget =
+        seasonKey === "winter" ? 0.16 : seasonKey === "spring" ? 0.08 : 0.02;
+      leafMaterial.clearcoat +=
+        (leafClearcoatTarget - leafMaterial.clearcoat) * 0.025;
       groundMaterial.color.lerp(new THREE.Color(target.ground), 0.022);
       fog.color.lerp(new THREE.Color(target.fog), 0.022);
       fog.density +=
@@ -716,8 +785,9 @@ export default function OakScene({ season }: OakSceneProps) {
       });
       geometries.forEach((geometry) => geometry.dispose());
       materials.forEach((material) => material.dispose());
-      barkTextures.color.dispose();
-      barkTextures.bump.dispose();
+      Object.values(barkMaps).forEach((texture) => texture.dispose());
+      Object.values(leafMaps).forEach((texture) => texture.dispose());
+      groundTexture.dispose();
       renderer.dispose();
       renderer.domElement.remove();
     };
@@ -726,9 +796,9 @@ export default function OakScene({ season }: OakSceneProps) {
   return (
     <div
       ref={mountRef}
-      className="oak-scene"
+      className={className ? `oak-scene ${className}` : "oak-scene"}
       role="img"
-      aria-label={`A realistic interactive oak tree moving through ${season} weather`}
+      aria-label={`A realistic interactive oak tree moving through ${resolvedSeason} weather`}
     />
   );
 }
