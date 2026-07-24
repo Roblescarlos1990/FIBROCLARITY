@@ -27,8 +27,11 @@ map.
 - Existing branch, root, oak-leaf geometry, weather systems, shadows, and
   pointer interaction are preserved.
 - Bark maps drive both color and micro-surface relief.
-- Leaf photographs are optimized as detail maps on the existing lobed oak-leaf
-  geometry, avoiding visible rectangular cards.
+- Leaf photographs provide subtle bump detail on the existing lobed oak-leaf
+  geometry. Seasonal color comes from the brighter procedural palette, avoiding
+  both visible rectangular cards and dark color multiplication.
+- Leaves cast soft canopy shadows without receiving dense self-shadowing, and
+  their reduced scale keeps individual lobes legible around the branch structure.
 - Seasonal maps are loaded once and switched with coordinated material,
   lighting, weather, fog, leaf-density, roughness, and clearcoat transitions.
 - Spring receives a subtle wet clearcoat, autumn remains dry and warm, and

@@ -28,7 +28,7 @@ type SeasonStyle = {
 
 const styles: Record<SeasonKey, SeasonStyle> = {
   spring: {
-    colors: ["#769775", "#95ae83", "#668b70", "#aeb98a"],
+    colors: ["#7fa27c", "#9fba8f", "#6f9678", "#b8c794"],
     leafScale: 0.78,
     light: "#fff0cf",
     ground: "#a7bea5",
@@ -42,7 +42,7 @@ const styles: Record<SeasonKey, SeasonStyle> = {
     leafRoughness: 0.58,
   },
   summer: {
-    colors: ["#355f49", "#527a5c", "#75905d", "#294f40"],
+    colors: ["#47765a", "#648b68", "#7f9c65", "#3f6a50"],
     leafScale: 1,
     light: "#ffe4b2",
     ground: "#8da98d",
@@ -56,7 +56,7 @@ const styles: Record<SeasonKey, SeasonStyle> = {
     leafRoughness: 0.7,
   },
   autumn: {
-    colors: ["#b85f37", "#d1843f", "#934530", "#cba34d"],
+    colors: ["#c66a3e", "#dc914a", "#a95035", "#d2ab58"],
     leafScale: 0.88,
     light: "#ffd4a1",
     ground: "#c39a72",
@@ -273,6 +273,8 @@ export default function OakScene({ season, className }: OakSceneProps) {
     ) as Record<SeasonKey, THREE.Texture>;
     Object.values(leafMaps).forEach((texture) => {
       texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+      texture.colorSpace = THREE.NoColorSpace;
+      texture.needsUpdate = true;
     });
     const groundTexture = loadTexture(texturePaths.ground, 2.2, 2.2);
 
@@ -396,11 +398,13 @@ export default function OakScene({ season, className }: OakSceneProps) {
     const leafGeometry = createOakLeafGeometry();
     const leafMaterial = new THREE.MeshPhysicalMaterial({
       color: "#ffffff",
-      map: leafMaps[seasonRef.current],
+      bumpMap: leafMaps[seasonRef.current],
+      bumpScale: 0.018,
       roughness: initialStyle.leafRoughness,
       metalness: 0,
-      sheen: 0.24,
-      sheenRoughness: 0.85,
+      sheen: 0.32,
+      sheenColor: "#b7cab4",
+      sheenRoughness: 0.78,
       clearcoat:
         seasonRef.current === "winter"
           ? 0.16
@@ -418,7 +422,7 @@ export default function OakScene({ season, className }: OakSceneProps) {
     );
     leaves.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     leaves.castShadow = true;
-    leaves.receiveShadow = true;
+    leaves.receiveShadow = false;
     tree.add(leaves);
 
     const leafData = Array.from({ length: leafCount }, (_, index) => {
@@ -544,7 +548,8 @@ export default function OakScene({ season, className }: OakSceneProps) {
     const fallingCount = 34;
     const fallingMaterial = new THREE.MeshPhysicalMaterial({
       color: "#ffffff",
-      map: leafMaps.autumn,
+      bumpMap: leafMaps.autumn,
+      bumpScale: 0.018,
       roughness: 0.8,
       side: THREE.DoubleSide,
       transparent: true,
@@ -625,7 +630,7 @@ export default function OakScene({ season, className }: OakSceneProps) {
         appliedBarkSeason = seasonKey;
       }
       if (appliedLeafSeason !== seasonKey) {
-        leafMaterial.map = leafMaps[seasonKey];
+        leafMaterial.bumpMap = leafMaps[seasonKey];
         leafMaterial.needsUpdate = true;
         appliedLeafSeason = seasonKey;
       }
@@ -654,7 +659,7 @@ export default function OakScene({ season, className }: OakSceneProps) {
         const winterKeep =
           seasonKey === "winter" && index % 17 !== 0 ? 0.035 : 1;
         const scale = leaf.scale * currentLeafScale * winterKeep;
-        dummy.scale.set(scale * 0.31, scale * 0.43, scale * 0.31);
+        dummy.scale.set(scale * 0.22, scale * 0.3, scale * 0.22);
         dummy.updateMatrix();
         leaves.setMatrixAt(index, dummy.matrix);
       });
