@@ -30,8 +30,14 @@ map.
 - Leaf photographs provide subtle bump detail on the existing lobed oak-leaf
   geometry. Seasonal color comes from the brighter procedural palette, avoiding
   both visible rectangular cards and dark color multiplication.
-- Leaves cast soft canopy shadows without receiving dense self-shadowing, and
-  their reduced scale keeps individual lobes legible around the branch structure.
+- The canopy uses 1,100 GPU-instanced leaves arranged in organic elliptical
+  clusters around the modeled twig structure.
+- Each leaf has subtle 3D cupping, edge ripple, tip curl, size and width
+  variation, sky-facing bias, individual color variation, and independent wind
+  response.
+- Leaves cast soft canopy shadows without receiving dense self-shadowing. Their
+  smaller scale preserves individual lobes and keeps the bark visible while
+  producing a substantially fuller silhouette.
 - Seasonal maps are loaded once and switched with coordinated material,
   lighting, weather, fog, leaf-density, roughness, and clearcoat transitions.
 - Spring receives a subtle wet clearcoat, autumn remains dry and warm, and

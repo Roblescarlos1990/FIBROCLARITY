@@ -163,6 +163,21 @@ function createOakLeafGeometry() {
     bevelThickness: 0.012,
   });
   geometry.center();
+
+  const positions = geometry.attributes.position;
+  for (let index = 0; index < positions.count; index += 1) {
+    const x = positions.getX(index);
+    const y = positions.getY(index);
+    const z = positions.getZ(index);
+    const edge = Math.min(1, Math.abs(x) / 0.48);
+    const cup = (1 - edge * edge) * 0.038;
+    const edgeRipple = Math.sin((y + 0.72) * 11.5) * edge * 0.009;
+    const tipProgress = Math.max(0, (y - 0.38) / 0.5);
+    const tipCurl = tipProgress * tipProgress * 0.046;
+    positions.setZ(index, z + cup + edgeRipple + tipCurl);
+  }
+
+  positions.needsUpdate = true;
   geometry.computeVertexNormals();
   return geometry;
 }
@@ -394,17 +409,19 @@ export default function OakScene({ season, className }: OakSceneProps) {
       }
     });
 
-    const leafCount = 320;
+    const leafCount = 1100;
     const leafGeometry = createOakLeafGeometry();
     const leafMaterial = new THREE.MeshPhysicalMaterial({
       color: "#ffffff",
       bumpMap: leafMaps[seasonRef.current],
-      bumpScale: 0.018,
+      bumpScale: 0.024,
       roughness: initialStyle.leafRoughness,
       metalness: 0,
-      sheen: 0.32,
-      sheenColor: "#b7cab4",
-      sheenRoughness: 0.78,
+      sheen: 0.42,
+      sheenColor: "#d8ddd0",
+      sheenRoughness: 0.72,
+      emissive: "#11140e",
+      emissiveIntensity: 0.055,
       clearcoat:
         seasonRef.current === "winter"
           ? 0.16
@@ -413,6 +430,7 @@ export default function OakScene({ season, className }: OakSceneProps) {
             : 0.02,
       clearcoatRoughness: 0.44,
       side: THREE.DoubleSide,
+      shadowSide: THREE.FrontSide,
       vertexColors: true,
     });
     const leaves = new THREE.InstancedMesh(
@@ -427,21 +445,34 @@ export default function OakScene({ season, className }: OakSceneProps) {
 
     const leafData = Array.from({ length: leafCount }, (_, index) => {
       const anchor = canopyAnchors[index % canopyAnchors.length];
-      const cloudRadius = 0.35 + random() * 0.75;
+      const clusterRadius = 0.24 + random() * 0.52;
+      const angle = random() * Math.PI * 2;
+      const radialDistance = Math.pow(random(), 0.72) * clusterRadius;
+      const verticalOffset =
+        (random() + random() - 1) * clusterRadius * 0.72;
+      const mostlySkyFacing = random() > 0.14;
       return {
         position: new THREE.Vector3(
-          anchor.x + (random() - 0.5) * cloudRadius * 1.7,
-          anchor.y + (random() - 0.5) * cloudRadius,
-          anchor.z + (random() - 0.5) * cloudRadius * 1.35,
+          anchor.x + Math.cos(angle) * radialDistance * 1.18,
+          anchor.y + verticalOffset,
+          anchor.z + Math.sin(angle) * radialDistance * 0.92,
         ),
         rotation: new THREE.Euler(
-          (random() - 0.5) * 1.25,
+          mostlySkyFacing
+            ? 1.05 + random() * 0.54
+            : 0.42 + random() * 0.62,
           random() * Math.PI * 2,
-          (random() - 0.5) * Math.PI,
+          (random() - 0.5) * 0.82,
         ),
-        scale: 0.68 + random() * 0.78,
+        scale: 0.52 + random() * 0.68,
+        widthScale: 0.88 + random() * 0.24,
         paletteIndex: Math.floor(random() * 4),
+        hueShift: (random() - 0.5) * 0.022,
+        saturationShift: (random() - 0.5) * 0.1,
+        lightnessShift: (random() - 0.5) * 0.12,
         windPhase: random() * Math.PI * 2,
+        flutter: 0.72 + random() * 0.72,
+        flex: 0.72 + random() * 0.56,
       };
     });
 
@@ -451,8 +482,22 @@ export default function OakScene({ season, className }: OakSceneProps) {
         value.colors.map((color) => new THREE.Color(color)),
       ]),
     ) as Record<SeasonKey, THREE.Color[]>;
-    const currentColors = leafData.map(
-      (leaf) => paletteColors[seasonRef.current][leaf.paletteIndex].clone(),
+    const seasonalLeafColors = Object.fromEntries(
+      (Object.keys(styles) as SeasonKey[]).map((seasonKey) => [
+        seasonKey,
+        leafData.map((leaf) =>
+          paletteColors[seasonKey][leaf.paletteIndex]
+            .clone()
+            .offsetHSL(
+              leaf.hueShift,
+              leaf.saturationShift,
+              leaf.lightnessShift,
+            ),
+        ),
+      ]),
+    ) as Record<SeasonKey, THREE.Color[]>;
+    const currentColors = seasonalLeafColors[seasonRef.current].map((color) =>
+      color.clone(),
     );
 
     const groundMaterial = new THREE.MeshStandardMaterial({
@@ -619,7 +664,7 @@ export default function OakScene({ season, className }: OakSceneProps) {
       const elapsed = clock.getElapsedTime();
       const seasonKey = seasonRef.current;
       const target = styles[seasonKey];
-      const targetPalette = paletteColors[seasonKey];
+      const targetLeafColors = seasonalLeafColors[seasonKey];
       if (appliedBarkSeason !== seasonKey) {
         bark.map = barkMaps[seasonKey];
         bark.bumpMap = barkMaps[seasonKey];
@@ -642,24 +687,32 @@ export default function OakScene({ season, className }: OakSceneProps) {
         (target.particleSize - currentParticleSize) * 0.024;
 
       leafData.forEach((leaf, index) => {
-        currentColors[index].lerp(
-          targetPalette[leaf.paletteIndex % targetPalette.length],
-          0.028,
-        );
+        currentColors[index].lerp(targetLeafColors[index], 0.028);
         leaves.setColorAt(index, currentColors[index]);
         dummy.position.copy(leaf.position);
         const wind =
-          Math.sin(elapsed * (0.7 + target.wind * 0.18) + leaf.windPhase) *
+          Math.sin(
+            elapsed * (0.7 + target.wind * 0.18) * leaf.flutter +
+              leaf.windPhase,
+          ) *
           target.wind;
-        dummy.position.x += wind * 0.016;
-        dummy.position.y += Math.sin(elapsed * 0.55 + index * 0.41) * 0.012;
+        dummy.position.x += wind * 0.013 * leaf.flex;
+        dummy.position.y +=
+          Math.sin(elapsed * 0.55 * leaf.flutter + index * 0.41) * 0.009;
+        dummy.position.z +=
+          Math.cos(elapsed * 0.42 + leaf.windPhase) * target.wind * 0.004;
         dummy.rotation.copy(leaf.rotation);
-        dummy.rotation.y += wind * 0.12;
-        dummy.rotation.z += wind * 0.06;
+        dummy.rotation.x += wind * 0.055 * leaf.flex;
+        dummy.rotation.y += wind * 0.075;
+        dummy.rotation.z += wind * 0.09 * leaf.flex;
         const winterKeep =
           seasonKey === "winter" && index % 17 !== 0 ? 0.035 : 1;
         const scale = leaf.scale * currentLeafScale * winterKeep;
-        dummy.scale.set(scale * 0.22, scale * 0.3, scale * 0.22);
+        dummy.scale.set(
+          scale * 0.18 * leaf.widthScale,
+          scale * 0.255,
+          scale * 0.18 * leaf.widthScale,
+        );
         dummy.updateMatrix();
         leaves.setMatrixAt(index, dummy.matrix);
       });
