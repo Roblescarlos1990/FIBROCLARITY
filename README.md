@@ -8,14 +8,18 @@ seasonal editorial lenses:
 - Autumn — Medicine
 - Winter — Research
 
-The homepage introduces the publication through an interactive Three.js oak.
+The homepage introduces the publication through an interactive Three.js
+refractive lens composition.
 Each seasonal chapter has its own palette, atmospheric hero, media carousel,
 immersive media viewer, fading article rail, and long-form article routes.
 
-The oak uses optimized seasonal photographic bark and leaf materials from
-`public/textures/oak/` while preserving its procedural branches, roots,
-weather, pointer interaction, and smooth seasonal transitions. See
-[docs/OAK-TEXTURE-UPGRADE.md](docs/OAK-TEXTURE-UPGRADE.md).
+The Living Lens combines glass transmission, metallic orbital rings, a
+faceted evidence core, botanical specimen fragments, droplets, and atmospheric
+particles. Pointer movement and editorial-lens selection alter the composition
+without sacrificing its light coastal palette.
+
+The previous oak prototype remains in `app/OakScene.tsx` as an inactive concept
+for possible Blender/GLB exploration. It is not imported by the live website.
 
 ## Routes
 

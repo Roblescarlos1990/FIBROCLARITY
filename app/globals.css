@@ -387,26 +387,42 @@ button:hover .arrow {
   font-weight: 600;
 }
 
-.tree-stage {
+.lens-stage {
   align-self: stretch;
   min-height: 650px;
   position: relative;
 }
 
-.oak-scene {
+.lens-stage::before {
+  content: "";
   position: absolute;
-  inset: -8% -4% 0 -9%;
-  cursor: crosshair;
-  filter: drop-shadow(0 30px 44px rgba(0, 0, 0, 0.34));
+  inset: 12% 2% 8% 4%;
+  border: 1px solid color-mix(in srgb, var(--season-main) 16%, transparent);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--season-glow) 48%, transparent), transparent 54%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.34), transparent 68%);
+  filter: blur(0.2px);
+  pointer-events: none;
+  transition:
+    border-color 1.2s ease,
+    background 1.2s ease;
 }
 
-.oak-scene canvas {
+.living-lens-scene {
+  position: absolute;
+  inset: -7% -6% -2% -8%;
+  cursor: crosshair;
+  filter: drop-shadow(0 34px 46px rgba(35, 67, 63, 0.2));
+}
+
+.living-lens-scene canvas {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-.tree-caption {
+.lens-caption {
   position: absolute;
   top: 11%;
   right: 2%;
@@ -416,7 +432,7 @@ button:hover .arrow {
   color: #e0ddd3;
 }
 
-.tree-caption > span {
+.lens-caption > span {
   color: var(--season-bright);
   font-family: var(--mono);
   font-size: 9px;
@@ -424,7 +440,7 @@ button:hover .arrow {
   transition: color 1.2s ease;
 }
 
-.tree-caption p {
+.lens-caption p {
   margin: -5px 0 0;
   font-family: var(--display);
   font-size: 28px;
@@ -432,7 +448,7 @@ button:hover .arrow {
   line-height: 1;
 }
 
-.tree-caption small {
+.lens-caption small {
   display: block;
   margin-top: 9px;
   color: #929b95;
@@ -1259,7 +1275,7 @@ button:hover .arrow {
     linear-gradient(120deg, #111a16, #0b100e);
 }
 
-.newsletter-tree {
+.newsletter-orbit {
   width: 360px;
   height: 360px;
   margin: auto;
@@ -1269,25 +1285,25 @@ button:hover .arrow {
   border-radius: 50%;
 }
 
-.newsletter-tree::before,
-.newsletter-tree::after {
+.newsletter-orbit::before,
+.newsletter-orbit::after {
   content: "";
   position: absolute;
   background: #9d7f50;
   opacity: 0.5;
 }
 
-.newsletter-tree::before {
+.newsletter-orbit::before {
   width: 1px;
   height: 100%;
 }
 
-.newsletter-tree::after {
+.newsletter-orbit::after {
   width: 100%;
   height: 1px;
 }
 
-.newsletter-tree strong {
+.newsletter-orbit strong {
   width: 86px;
   height: 86px;
   display: grid;
@@ -1454,7 +1470,7 @@ button:hover .arrow {
     font-size: clamp(62px, 8.4vw, 90px);
   }
 
-  .tree-stage {
+  .lens-stage {
     min-height: 650px;
   }
 
@@ -1488,7 +1504,7 @@ button:hover .arrow {
     gap: 40px;
   }
 
-  .newsletter-tree {
+  .newsletter-orbit {
     width: 280px;
     height: 280px;
   }
@@ -1527,16 +1543,16 @@ button:hover .arrow {
     font-size: 17px;
   }
 
-  .tree-stage {
+  .lens-stage {
     min-height: 520px;
     margin-top: -15px;
   }
 
-  .oak-scene {
+  .living-lens-scene {
     inset: -3% -10% -8%;
   }
 
-  .tree-caption {
+  .lens-caption {
     top: 15%;
   }
 
@@ -1632,7 +1648,7 @@ button:hover .arrow {
     grid-template-columns: 1fr;
   }
 
-  .newsletter-tree {
+  .newsletter-orbit {
     display: none;
   }
 
@@ -1672,11 +1688,11 @@ button:hover .arrow {
     gap: 21px;
   }
 
-  .tree-stage {
+  .lens-stage {
     min-height: 470px;
   }
 
-  .tree-caption {
+  .lens-caption {
     right: 0;
   }
 
@@ -1944,11 +1960,11 @@ body {
   opacity: 0;
   filter: drop-shadow(0 28px 34px rgba(51, 71, 64, 0.12));
   transform: translateY(18px) scale(0.92);
-  animation: intro-oak 1.55s 0.12s cubic-bezier(0.16, 0.84, 0.34, 1)
+  animation: intro-mark-reveal 1.55s 0.12s cubic-bezier(0.16, 0.84, 0.34, 1)
     forwards;
 }
 
-@keyframes intro-oak {
+@keyframes intro-mark-reveal {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -2094,15 +2110,15 @@ body {
   color: #425b55;
 }
 
-.oak-scene {
+.living-lens-scene {
   filter: drop-shadow(0 34px 38px rgba(55, 72, 66, 0.19));
 }
 
-.tree-caption {
+.lens-caption {
   color: #29423c;
 }
 
-.tree-caption small {
+.lens-caption small {
   color: #76857f;
 }
 
@@ -2339,12 +2355,12 @@ body {
     linear-gradient(120deg, #edf1ea, #e5eeee);
 }
 
-.newsletter-tree::before,
-.newsletter-tree::after {
+.newsletter-orbit::before,
+.newsletter-orbit::after {
   background: #8b724b;
 }
 
-.newsletter-tree strong {
+.newsletter-orbit strong {
   color: var(--gold);
   background: rgba(248, 247, 240, 0.86);
 }

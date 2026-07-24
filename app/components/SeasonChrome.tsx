@@ -14,7 +14,7 @@ export function SeasonHeader({
   return (
     <header className={`season-header ${compact ? "is-compact" : ""}`}>
       <Link className="season-brand" href="/" aria-label="XYLENS home">
-        <Image src="/xylens-oak-mark.svg" alt="" width={42} height={42} />
+        <Image src="/xylens-lens-mark.svg" alt="" width={42} height={42} />
         <span>
           <strong>XYLENS</strong>
           <small>Journal of Medicine &amp; Wellness</small>
@@ -49,7 +49,7 @@ export function SeasonFooter({ activeSeason }: { activeSeason: SeasonSlug }) {
   return (
     <footer className="season-footer">
       <div className="season-footer-brand">
-        <Image src="/xylens-oak-mark.svg" alt="" width={54} height={54} />
+        <Image src="/xylens-lens-mark.svg" alt="" width={54} height={54} />
         <div>
           <strong>XYLENS</strong>
           <span>Independent medicine · research · restorative living</span>

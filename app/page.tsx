@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import IntroSequence from "./IntroSequence";
-import OakScene, { type SeasonKey } from "./OakScene";
+import LivingLensScene, { type SeasonKey } from "./LivingLensScene";
 import { articles, lensCopy, type Lens } from "./content";
 import { foundation, type FoundationLens } from "./foundation";
 
@@ -19,20 +19,20 @@ const weatherCopy: Record<
   { title: string; detail: string }
 > = {
   spring: {
-    title: "Coastal rain",
-    detail: "New leaves · fine mist · quick light",
+    title: "Mineral mist",
+    detail: "Fresh growth · cool water · soft light",
   },
   summer: {
-    title: "Warm marine air",
-    detail: "Deep canopy · sun motes · soft breeze",
+    title: "Pacific light",
+    detail: "Marine air · sun particles · open water",
   },
   autumn: {
-    title: "Dry turning wind",
-    detail: "Falling oak leaves · amber light",
+    title: "Copper current",
+    detail: "Dry botanicals · amber light · warm wind",
   },
   winter: {
-    title: "Silver weather",
-    detail: "Bare structure · snow drift · low fog",
+    title: "Silver atmosphere",
+    detail: "Mineral forms · low fog · clear focus",
   },
 };
 
@@ -46,7 +46,7 @@ function Brand() {
     >
       <span className="brand-mark" aria-hidden="true">
         <Image
-          src="/xylens-oak-mark.svg"
+          src="/xylens-lens-mark.svg"
           alt=""
           width={42}
           height={42}
@@ -159,9 +159,9 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="tree-stage">
-            <OakScene season={activeSeason} />
-            <div className="tree-caption">
+          <div className="lens-stage">
+            <LivingLensScene season={activeSeason} />
+            <div className="lens-caption">
               <span>
                 {current.number} / 04
               </span>
@@ -171,7 +171,7 @@ export default function Home() {
               </p>
             </div>
             <p className="interaction-note">
-              Move across the canopy · choose a lens below
+              Move through the lens · choose a perspective below
             </p>
             <div className="weather-readout" aria-live="polite">
               <span aria-hidden="true" />
@@ -216,7 +216,7 @@ export default function Home() {
       <section id="journal" className="section editorial-section">
         <div className="section-heading">
           <div>
-            <p className="section-kicker">The Canopy · Editor’s picks</p>
+            <p className="section-kicker">The Edit · Editor’s picks</p>
             <h2>Ideas worth sitting with.</h2>
           </div>
           <p>
@@ -437,7 +437,7 @@ export default function Home() {
       </section>
 
       <section id="newsletter" className="newsletter-section">
-        <div className="newsletter-tree" aria-hidden="true">
+        <div className="newsletter-orbit" aria-hidden="true">
           <span className="newsletter-ring ring-one" />
           <span className="newsletter-ring ring-two" />
           <span className="newsletter-ring ring-three" />

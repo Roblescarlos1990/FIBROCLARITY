@@ -28,7 +28,7 @@ should feel restorative and curious without sacrificing scientific rigor.
 
 ## 4. Positioning
 
-**Core idea:** Where evidence takes root.
+**Core idea:** Where evidence comes into focus.
 
 XYLENS sits between a medical learning center, an independent magazine, and a
 nature-aware wellness journal. Its holistic framing expands context; it does
@@ -40,8 +40,8 @@ not lower the standard for clinical claims.
 | --- | --- |
 | Base palette | Charcoal, near-black, bone |
 | Metals | Aged gold and cool silver |
-| Spring / Wellness | Eucalyptus, sea glass, young leaf |
-| Summer / Journal | Deep canopy, warm coastal sun |
+| Spring / Wellness | Eucalyptus, sea glass, mineral mist |
+| Summer / Journal | Pacific light, marine air, warm coastal sun |
 | Autumn / Medicine | Rust, ember, persimmon, muted red |
 | Winter / Research | Slate, marine layer, silver-blue |
 | Display type | Literary old-style serif |
@@ -51,18 +51,21 @@ not lower the standard for clinical claims.
 
 ## 6. Signature experience
 
-A procedural 3D oak anchors the first viewport. Choosing an editorial lens
-changes the tree's foliage and the surrounding light:
+An interactive refractive 3D lens anchors the first viewport. It combines
+glass, aged gold, cool silver, botanical specimens, mineral droplets, and an
+abstract evidence core. Choosing an editorial lens changes its materials,
+particles, and surrounding light:
 
 | Lens | Season | Editorial meaning |
 | --- | --- | --- |
-| Journal / Field Notes | Summer | Observation, culture, life in full view |
-| Wellness | Spring | Renewal and restorative practice |
-| Medicine | Autumn | The body in change and clinical decisions |
-| Research | Winter | Structure, uncertainty, and what remains |
+| Journal / Field Notes | Summer | Pacific light, observation, and life in full view |
+| Wellness | Spring | Mineral mist, renewal, and restorative practice |
+| Medicine | Autumn | Copper warmth, bodily change, and clinical decisions |
+| Research | Winter | Silver clarity, uncertainty, and what remains |
 
-The tree responds subtly to pointer movement. Motion reduces for readers who
-request reduced motion.
+The composition responds subtly to pointer movement. Motion reduces for readers
+who request reduced motion. The previous procedural oak is retained only as an
+inactive prototype for future Blender experimentation.
 
 ## 7. Information architecture
 

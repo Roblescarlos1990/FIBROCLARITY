@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">XYLENS lens mark</title>
+  <desc id="desc">A refined optical lens formed from silver, green, and aged-gold orbital lines.</desc>
+  <defs>
+    <linearGradient id="lens" x1="18" y1="12" x2="78" y2="84" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d8e7e2"/>
+      <stop offset=".48" stop-color="#7ba099"/>
+      <stop offset="1" stop-color="#385f58"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="21" y1="20" x2="76" y2="77" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d9c597"/>
+      <stop offset=".52" stop-color="#b38c50"/>
+      <stop offset="1" stop-color="#8a6b3f"/>
+    </linearGradient>
+  </defs>
+  <circle cx="48" cy="48" r="44" fill="#f5f3ea" stroke="#9cadab" stroke-width="1"/>
+  <ellipse cx="48" cy="48" rx="34" ry="15.5" fill="none" stroke="url(#metal)" stroke-width="2.1" transform="rotate(-24 48 48)"/>
+  <ellipse cx="48" cy="48" rx="34" ry="15.5" fill="none" stroke="#aab8ba" stroke-width="1.35" transform="rotate(57 48 48)"/>
+  <circle cx="48" cy="48" r="18.5" fill="url(#lens)" fill-opacity=".94" stroke="#f2ead8" stroke-width="1.5"/>
+  <circle cx="48" cy="48" r="10.5" fill="none" stroke="#e9efe9" stroke-opacity=".72" stroke-width="1"/>
+  <path d="M40.5 37.5 48 45l7.5-7.5 3 3L51 48l7.5 7.5-3 3L48 51l-7.5 7.5-3-3L45 48l-7.5-7.5 3-3Z" fill="#f3eee0" fill-opacity=".9"/>
+  <circle cx="72.8" cy="29.3" r="2.4" fill="#c1a066"/>
+</svg>

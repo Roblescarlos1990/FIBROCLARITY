@@ -9,7 +9,7 @@
   "company": {
     "name": "XYLENS Journal of Medicine & Wellness",
     "short_name": "XYLENS",
-    "tagline": "Where evidence takes root.",
+    "tagline": "Where evidence comes into focus.",
     "business_type": "Independent health publication",
     "phone_display": "",
     "phone_digits": "",
@@ -27,12 +27,12 @@
     "secondary_color": "#6f8a72",
     "accent_color": "#b79254",
     "silver_color": "#a9b8ba",
-    "logo_primary": "public/xylens-oak-mark.svg",
-    "intro_logo": "public/xylens-oak-mark.svg",
-    "logo_mark": "public/xylens-oak-mark.svg",
-    "document_logo": "public/xylens-oak-mark.svg",
-    "watermark_dark": "public/xylens-oak-mark.svg",
-    "watermark_print": "public/xylens-oak-mark.svg",
+    "logo_primary": "public/xylens-lens-mark.svg",
+    "intro_logo": "public/xylens-lens-mark.svg",
+    "logo_mark": "public/xylens-lens-mark.svg",
+    "document_logo": "public/xylens-lens-mark.svg",
+    "watermark_dark": "public/xylens-lens-mark.svg",
+    "watermark_print": "public/xylens-lens-mark.svg",
     "public_watermark_opacity": 0.055,
     "document_watermark_opacity": 0.045,
     "external_logo_file": ""
@@ -60,7 +60,7 @@
     "eyebrow": "Independent medicine · research · restorative living",
     "hero": {
       "headline_primary": "Where evidence",
-      "headline_accent": "takes root.",
+      "headline_accent": "comes into focus.",
       "description": "A journal for curious people who want medical rigor without losing sight of nature, culture, and the lived experience of being well.",
       "primary_action": "Enter the journal",
       "secondary_action": "Read our editorial standard"

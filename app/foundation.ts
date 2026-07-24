@@ -1,6 +1,6 @@
 import intake from "../CLIENT-INTAKE.json";
 import type { CSSProperties } from "react";
-import type { SeasonKey } from "./OakScene";
+import type { SeasonKey } from "./LivingLensScene";
 import type { Lens } from "./content";
 
 export type FoundationLens = {

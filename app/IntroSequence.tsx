@@ -56,14 +56,14 @@ export default function IntroSequence({ onComplete }: IntroSequenceProps) {
       <div className="intro-lockup">
         <Image
           className="intro-mark"
-          src="/xylens-oak-mark.svg"
+          src="/xylens-lens-mark.svg"
           alt=""
           width={360}
           height={360}
         />
         <p>Journal of Medicine &amp; Wellness</p>
         <strong>XYLENS</strong>
-        <small>Where evidence takes root.</small>
+        <small>Where evidence comes into focus.</small>
       </div>
       <button type="button" className="intro-skip" onClick={dismiss}>
         Enter the journal <span aria-hidden="true">↗</span>

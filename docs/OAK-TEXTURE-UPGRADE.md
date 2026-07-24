@@ -1,5 +1,9 @@
 # XYLENS Oak Texture Upgrade
 
+> Status: inactive prototype. The live homepage now uses
+> `app/LivingLensScene.tsx`; this file is retained for possible Blender/GLB
+> development.
+
 The realistic oak material upgrade is integrated into the existing
 `app/OakScene.tsx` component.
 
