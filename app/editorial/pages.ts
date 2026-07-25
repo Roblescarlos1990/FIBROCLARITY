@@ -64,7 +64,7 @@ export const editorialPages: Record<string, EditorialPageDefinition> = {
   },
   research: {
     slug: "research",
-    eyebrow: "Research · Winter lens",
+    eyebrow: "Research desk · Methods and uncertainty",
     title: "The structure beneath the headline.",
     deck:
       "Methods, uncertainty, and careful translations of emerging science for people who want to see how a conclusion was built.",
@@ -85,7 +85,7 @@ export const editorialPages: Record<string, EditorialPageDefinition> = {
   },
   wellness: {
     slug: "wellness",
-    eyebrow: "Wellness · Spring lens",
+    eyebrow: "Wellness desk · Restorative practice",
     title: "Restorative practice, held to an honest standard.",
     deck:
       "Nature-aware rituals and daily practices described with practical boundaries, safety context, and no miracle language.",
@@ -145,9 +145,9 @@ export const editorialPages: Record<string, EditorialPageDefinition> = {
     ],
     sections: [
       {
-        title: "Why the seasons",
+        title: "One publication, one standard",
         body:
-          "Spring, summer, autumn, and winter are editorial lenses—not separate brands. They help the publication shift atmosphere while keeping one consistent standard for clarity, access, and evidence.",
+          "Medicine, wellness, research, and field reporting share one consistent standard for clarity, access, sourcing, and visible uncertainty.",
       },
     ],
   },

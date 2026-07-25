@@ -4,39 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import IntroSequence from "./IntroSequence";
-import LivingLensScene, { type SeasonKey } from "./LivingLensScene";
-import { navigateWithTransition } from "./RouteTransition";
+import LivingLensScene from "./LivingLensScene";
 import { EditorialFooter } from "./components/EditorialChrome";
-import { articles, lensCopy, type Lens } from "./content";
-import { foundation, type FoundationLens } from "./foundation";
+import { articles, type Lens } from "./content";
+import { foundation } from "./foundation";
 
-const seasonOptions = foundation.publication.lenses;
 const categories = [
   "All",
-  ...Array.from(new Set(seasonOptions.map((option) => option.lens))),
+  ...Array.from(new Set(articles.map((article) => article.category))),
 ] as Array<"All" | Lens>;
-
-const weatherCopy: Record<
-  SeasonKey,
-  { title: string; detail: string }
-> = {
-  spring: {
-    title: "Mineral mist",
-    detail: "Fresh growth · cool water · soft light",
-  },
-  summer: {
-    title: "Pacific light",
-    detail: "Marine air · sun particles · open water",
-  },
-  autumn: {
-    title: "Copper current",
-    detail: "Dry botanicals · amber light · warm wind",
-  },
-  winter: {
-    title: "Silver atmosphere",
-    detail: "Mineral forms · low fog · clear focus",
-  },
-};
 
 function Brand() {
   const { company, publication } = foundation;
@@ -72,15 +48,9 @@ function Arrow() {
 
 export default function Home() {
   const [introComplete, setIntroComplete] = useState(false);
-  const [activeSeason, setActiveSeason] = useState<SeasonKey>("summer");
   const [activeCategory, setActiveCategory] = useState<"All" | Lens>("All");
   const [query, setQuery] = useState("");
 
-  const seasonIndex = seasonOptions.findIndex(
-    (item) => item.key === activeSeason,
-  );
-  const current = seasonOptions[seasonIndex];
-  const weather = weatherCopy[activeSeason];
   const featured = articles.filter((article) => article.featured);
   const completeIntro = useCallback(() => setIntroComplete(true), []);
 
@@ -98,19 +68,13 @@ export default function Home() {
     });
   }, [activeCategory, query]);
 
-  const selectLens = (option: FoundationLens) => {
-    setActiveSeason(option.key);
-    setActiveCategory(option.lens);
-    navigateWithTransition(`/seasons/${option.key}`);
-  };
-
   return (
     <>
       {!introComplete && <IntroSequence onComplete={completeIntro} />}
     <main
       id="main-content"
       className="site-shell"
-      data-season={activeSeason}
+      data-season="summer"
       data-template={foundation.project.template_id}
       style={foundation.cssProperties}
     >
@@ -160,44 +124,25 @@ export default function Home() {
           </div>
 
           <div className="lens-stage">
-            <LivingLensScene season={activeSeason} />
+            <LivingLensScene season="summer" />
             <div className="lens-caption">
-              <span>
-                {current.number} / 04
-              </span>
+              <span>XYL / 01</span>
               <p>
-                {current.season}
-                <small>{current.label} lens</small>
+                Living Lens
+                <small>Evidence in focus</small>
               </p>
             </div>
             <p className="interaction-note">
-              Move through the lens · choose a perspective below
+              Move through the lens · enter the journal below
             </p>
             <div className="weather-readout" aria-live="polite">
               <span aria-hidden="true" />
               <p>
-                {weather.title}
-                <small>{weather.detail}</small>
+                Pacific light
+                <small>Marine air · botanical forms · open inquiry</small>
               </p>
             </div>
           </div>
-        </div>
-
-        <div className="season-nav" role="tablist" aria-label="Editorial lenses">
-          {seasonOptions.map((option) => (
-            <button
-              key={option.key}
-              type="button"
-              role="tab"
-              aria-selected={activeSeason === option.key}
-              className={activeSeason === option.key ? "is-active" : ""}
-              onClick={() => selectLens(option)}
-            >
-              <span>{option.number}</span>
-              <strong>{option.label}</strong>
-              <small>{option.season}</small>
-            </button>
-          ))}
         </div>
       </section>
 
@@ -275,38 +220,6 @@ export default function Home() {
               </article>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section id="lenses" className="section lenses-section">
-        <div className="section-heading compact-heading">
-          <div>
-            <p className="section-kicker">Explore by lens</p>
-            <h2>Four seasons of inquiry.</h2>
-          </div>
-        </div>
-
-        <div className="lens-grid">
-          {seasonOptions.map((option) => {
-            const copy = lensCopy[option.lens];
-            const active = activeSeason === option.key;
-            return (
-              <button
-                type="button"
-                className={`lens-card lens-${option.key} ${active ? "is-active" : ""}`}
-                key={option.key}
-                onClick={() => selectLens(option)}
-              >
-                <span className="lens-number">{option.number}</span>
-                <span className="lens-season">{copy.kicker}</span>
-                <strong>{copy.title}</strong>
-                <p>{copy.description}</p>
-                <span className="lens-cta">
-                  View this lens <Arrow />
-                </span>
-              </button>
-            );
-          })}
         </div>
       </section>
 

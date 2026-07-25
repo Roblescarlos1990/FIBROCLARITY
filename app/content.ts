@@ -88,33 +88,3 @@ export const articles: Article[] = [
     accent: "moss",
   },
 ];
-
-export const lensCopy: Record<
-  Lens,
-  { kicker: string; title: string; description: string }
-> = {
-  Medicine: {
-    kicker: "Autumn · The body in change",
-    title: "Medicine",
-    description:
-      "Clinical explanations, care pathways, and practical context for complex health questions.",
-  },
-  Wellness: {
-    kicker: "Spring · Restorative practice",
-    title: "Wellness",
-    description:
-      "Nature-aware rituals and daily practices—held to an honest standard of evidence.",
-  },
-  Research: {
-    kicker: "Winter · The structure beneath",
-    title: "Research",
-    description:
-      "Deep reviews, uncertainty maps, and clear translations of emerging science.",
-  },
-  "Field Notes": {
-    kicker: "Summer · Life in full view",
-    title: "Field Notes",
-    description:
-      "Independent journalism at the intersection of health, place, culture, and ecology.",
-  },
-};

@@ -1,29 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import ArticleShare from "./ArticleShare";
-import { SeasonFooter, SeasonHeader } from "./SeasonChrome";
-import type {
-  SeasonDefinition,
-  SeasonalArticle,
-} from "../seasons/data";
+import { EditorialFooter, EditorialHeader } from "./EditorialChrome";
+import type { SeasonalArticle } from "../seasons/data";
 import { siteUrl } from "../site";
 
 type ArticleReaderProps = {
   article: SeasonalArticle;
-  season: SeasonDefinition;
   related: SeasonalArticle[];
   previous: SeasonalArticle;
   next: SeasonalArticle;
-  seasonPosition: number;
 };
 
 export default function ArticleReader({
   article,
-  season,
   related,
   previous,
   next,
-  seasonPosition,
 }: ArticleReaderProps) {
   const structuredData = {
     "@context": "https://schema.org",
@@ -39,15 +32,12 @@ export default function ArticleReader({
   };
 
   return (
-    <main
-      id="main-content"
-      className={`article-reader season-${season.slug}`}
-    >
+    <main id="main-content" className="article-reader">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <SeasonHeader activeSeason={season.slug} compact />
+      <EditorialHeader active="journal" />
 
       <section className="article-hero">
         <div className="article-hero-image">
@@ -61,12 +51,10 @@ export default function ArticleReader({
           <span aria-hidden="true" />
         </div>
         <div className="article-hero-copy">
-          <Link href={`/seasons/${season.slug}`} className="article-back-link">
-            ← Back to {season.label}
+          <Link href="/journal" className="article-back-link">
+            ← Back to the journal
           </Link>
-          <p>
-            {season.number} / 04 · {article.category}
-          </p>
+          <p>{article.category} · {article.evidenceStatus}</p>
           <h1>{article.title}</h1>
           <strong>{article.subtitle}</strong>
           <div className="article-hero-meta">
@@ -76,14 +64,11 @@ export default function ArticleReader({
             <span>{article.readingTime}</span>
           </div>
         </div>
-        <span className="article-season-watermark" aria-hidden="true">
-          {String(seasonPosition + 1).padStart(2, "0")}
-        </span>
       </section>
 
       <div className="article-layout">
         <aside className="article-aside">
-          <span>XYLENS / {season.label.toUpperCase()}</span>
+          <span>XYLENS / ARTICLE RECORD</span>
           <p>
             Evidence and interpretation are identified separately. Uncertainty
             remains visible.
@@ -215,7 +200,7 @@ export default function ArticleReader({
       {related.length > 0 && (
         <section className="related-stories">
           <div>
-            <p>Continue through {season.label}</p>
+            <p>Continue reading</p>
             <h2>Related stories</h2>
           </div>
           <div className="related-story-grid">
@@ -256,7 +241,7 @@ export default function ArticleReader({
         </Link>
       </nav>
 
-      <SeasonFooter activeSeason={season.slug} />
+      <EditorialFooter />
     </main>
   );
 }

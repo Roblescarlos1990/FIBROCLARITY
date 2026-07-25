@@ -83,36 +83,6 @@
       "label": "Field Notes",
       "target": "/contact"
     },
-    "lenses": [
-      {
-        "key": "summer",
-        "lens": "Field Notes",
-        "label": "Journal",
-        "season": "Summer",
-        "number": "01"
-      },
-      {
-        "key": "spring",
-        "lens": "Wellness",
-        "label": "Wellness",
-        "season": "Spring",
-        "number": "02"
-      },
-      {
-        "key": "autumn",
-        "lens": "Medicine",
-        "label": "Medicine",
-        "season": "Autumn",
-        "number": "03"
-      },
-      {
-        "key": "winter",
-        "lens": "Research",
-        "label": "Research",
-        "season": "Winter",
-        "number": "04"
-      }
-    ],
     "principles": [
       "Evidence in context",
       "Whole-person health",

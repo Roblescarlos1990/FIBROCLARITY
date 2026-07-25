@@ -29,26 +29,20 @@ type TransitionCssProperties = CSSProperties & {
 };
 
 const themes: Record<string, TransitionTheme> = {
-  spring: {
-    label: "Wellness · Spring",
+  wellness: {
+    label: "XYLENS · Wellness",
     accent: "#7fa58f",
     deep: "#274b42",
     wash: "#e3eee5",
   },
-  summer: {
-    label: "Journal · Summer",
+  reading: {
+    label: "XYLENS · The Journal",
     accent: "#6c9ba0",
     deep: "#264a4d",
     wash: "#dfebea",
   },
-  autumn: {
-    label: "Medicine · Autumn",
-    accent: "#bd754c",
-    deep: "#633d30",
-    wash: "#f0dfd2",
-  },
-  winter: {
-    label: "Research · Winter",
+  research: {
+    label: "XYLENS · Evidence",
     accent: "#9aafb4",
     deep: "#334d53",
     wash: "#e4ebec",
@@ -62,16 +56,12 @@ const themes: Record<string, TransitionTheme> = {
 };
 
 function resolveTheme(pathname: string) {
-  const season = Object.keys(themes).find(
-    (key) => key !== "journal" && pathname.includes(`/seasons/${key}`),
-  );
-  if (season) return themes[season];
-  if (pathname === "/wellness") return themes.spring;
+  if (pathname === "/wellness") return themes.wellness;
   if (pathname === "/research" || pathname === "/evidence-reviews") {
-    return themes.winter;
+    return themes.research;
   }
   if (pathname === "/journal" || pathname.startsWith("/journal/")) {
-    return themes.summer;
+    return themes.reading;
   }
   return themes.journal;
 }

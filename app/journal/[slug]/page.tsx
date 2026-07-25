@@ -4,9 +4,6 @@ import ArticleReader from "../../components/ArticleReader";
 import {
   getAllArticles,
   getRelatedArticles,
-  getSeasonArticle,
-  seasonOrder,
-  seasons,
 } from "../../seasons/data";
 
 type JournalArticleRouteProps = {
@@ -44,28 +41,22 @@ export default async function JournalArticleRoute({
   params,
 }: JournalArticleRouteProps) {
   const { slug } = await params;
-  const article = getAllArticles().find((item) => item.slug === slug);
+  const publicArticles = getAllArticles();
+  const article = publicArticles.find((item) => item.slug === slug);
   if (!article) notFound();
-  const season = article.season;
-  const seasonIndex = seasonOrder.indexOf(season);
-  const seasonArticles = seasons[season].articles;
-  const articleIndex = seasonArticles.findIndex((item) => item.slug === slug);
+  const articleIndex = publicArticles.findIndex((item) => item.slug === slug);
   const previous =
-    seasonArticles[
-      (articleIndex - 1 + seasonArticles.length) % seasonArticles.length
+    publicArticles[
+      (articleIndex - 1 + publicArticles.length) % publicArticles.length
     ];
-  const next = seasonArticles[(articleIndex + 1) % seasonArticles.length];
-  const canonicalArticle = getSeasonArticle(season, slug);
-  if (!canonicalArticle) notFound();
+  const next = publicArticles[(articleIndex + 1) % publicArticles.length];
 
   return (
     <ArticleReader
-      article={canonicalArticle}
-      season={seasons[season]}
-      related={getRelatedArticles(canonicalArticle)}
+      article={article}
+      related={getRelatedArticles(article)}
       previous={previous}
       next={next}
-      seasonPosition={seasonIndex}
     />
   );
 }

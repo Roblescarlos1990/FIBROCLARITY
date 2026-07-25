@@ -1,15 +1,5 @@
 import intake from "../CLIENT-INTAKE.json";
 import type { CSSProperties } from "react";
-import type { SeasonKey } from "./LivingLensScene";
-import type { Lens } from "./content";
-
-export type FoundationLens = {
-  key: SeasonKey;
-  lens: Lens;
-  label: string;
-  season: string;
-  number: string;
-};
 
 export type FoundationNavigation = {
   label: string;
@@ -24,12 +14,6 @@ type FoundationCssProperties = CSSProperties & {
 };
 
 const services = Object.values(intake.services);
-const lenses = (intake.publication.lenses as FoundationLens[]).map(
-  (lens, index) => ({
-    ...lens,
-    label: services[index] || lens.label,
-  }),
-);
 const navigation =
   intake.publication.primary_navigation as FoundationNavigation[];
 
@@ -37,7 +21,6 @@ export const foundation = {
   ...intake,
   publication: {
     ...intake.publication,
-    lenses,
     primary_navigation: navigation,
   },
   cssProperties: {

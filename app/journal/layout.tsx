@@ -1,6 +1,6 @@
-import "./seasonal.css";
+import "../seasons/seasonal.css";
 
-export default function SeasonsLayout({
+export default function JournalLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
