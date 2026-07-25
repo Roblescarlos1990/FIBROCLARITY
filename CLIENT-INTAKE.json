@@ -68,20 +68,20 @@
     "primary_navigation": [
       {
         "label": "Journal",
-        "target": "#journal"
+        "target": "/journal"
       },
       {
-        "label": "Lenses",
-        "target": "#lenses"
+        "label": "Evidence",
+        "target": "/evidence-reviews"
       },
       {
         "label": "Our standard",
-        "target": "#standard"
+        "target": "/editorial-standards"
       }
     ],
     "header_action": {
       "label": "Field Notes",
-      "target": "#newsletter"
+      "target": "/contact"
     },
     "lenses": [
       {

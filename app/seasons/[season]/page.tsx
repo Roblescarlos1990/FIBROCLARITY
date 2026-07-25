@@ -20,6 +20,14 @@ export async function generateMetadata({
   return {
     title: `${current.label} · ${current.lens}`,
     description: current.subtitle,
+    alternates: { canonical: `/seasons/${current.slug}` },
+    openGraph: {
+      title: `${current.label} · ${current.lens}`,
+      description: current.subtitle,
+      type: "website",
+      url: `/seasons/${current.slug}`,
+      images: [{ url: current.heroImage, alt: current.heroAlt }],
+    },
   };
 }
 

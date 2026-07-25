@@ -1,3 +1,10 @@
+import {
+  assertPublicRecord,
+  evidenceStatusDefinitions,
+  type EditorialGovernance,
+  type EvidenceStatus,
+} from "../editorial/model";
+
 export type SeasonSlug = "spring" | "summer" | "autumn" | "winter";
 
 export type MediaType =
@@ -21,6 +28,9 @@ export type SeasonalMedia = {
   category: string;
   duration?: string;
   alt: string;
+  credit?: string;
+  transcript?: string;
+  captionSource?: string;
 };
 
 export type ArticleBlock =
@@ -29,7 +39,7 @@ export type ArticleBlock =
   | { type: "quote"; text: string; attribution?: string }
   | { type: "image"; src: string; alt: string; caption: string };
 
-export type SeasonalArticle = {
+type SeasonalArticleCore = {
   slug: string;
   season: SeasonSlug;
   title: string;
@@ -44,6 +54,14 @@ export type SeasonalArticle = {
   content: ArticleBlock[];
   relatedArticles: string[];
 };
+
+export type SeasonalArticle = SeasonalArticleCore &
+  EditorialGovernance & {
+    publishedAtISO: string;
+    reviewedAtISO: string;
+  };
+
+type SeasonalArticleInput = SeasonalArticleCore;
 
 export type SeasonDefinition = {
   slug: SeasonSlug;
@@ -253,7 +271,7 @@ export const seasons: Record<SeasonSlug, SeasonDefinition> = {
         thumbnail: images.amberForest,
         mediaSource: coastalVideo,
         author: "Dr. Elias Wynn",
-        publishedAt: "September 14, 2026",
+        publishedAt: "September 14, 2025",
         category: "Clinical explainer",
         duration: "09:22",
         alt: "Amber hillside beneath dramatic autumn light",
@@ -268,7 +286,7 @@ export const seasons: Record<SeasonSlug, SeasonDefinition> = {
         thumbnail: images.driftwood,
         galleryImages: [images.driftwood, images.desert, images.amberForest],
         author: "Sofia Merritt",
-        publishedAt: "October 03, 2026",
+        publishedAt: "October 03, 2025",
         category: "Photo essay",
         alt: "Weathered natural forms in warm brown tones",
       },
@@ -282,7 +300,7 @@ export const seasons: Record<SeasonSlug, SeasonDefinition> = {
         thumbnail: images.desert,
         mediaSource: coastalVideo,
         author: "Mara Vale",
-        publishedAt: "October 17, 2026",
+        publishedAt: "October 17, 2025",
         category: "Interview",
         duration: "21:05",
         alt: "Weathered copper desert forms at dusk",
@@ -314,7 +332,7 @@ export const seasons: Record<SeasonSlug, SeasonDefinition> = {
         thumbnail: images.mountain,
         mediaSource: coastalVideo,
         author: "XYLENS Research Desk",
-        publishedAt: "December 08, 2026",
+        publishedAt: "December 08, 2025",
         category: "Research film",
         duration: "14:32",
         alt: "Pale winter mountains beneath a cold blue sky",
@@ -329,7 +347,7 @@ export const seasons: Record<SeasonSlug, SeasonDefinition> = {
         thumbnail: images.fog,
         galleryImages: [images.fog, images.winterForest, images.mountain],
         author: "Calder North",
-        publishedAt: "December 19, 2026",
+        publishedAt: "December 19, 2025",
         category: "Visual index",
         alt: "Fog moving across a muted winter landscape",
       },
@@ -343,7 +361,7 @@ export const seasons: Record<SeasonSlug, SeasonDefinition> = {
         thumbnail: images.winterForest,
         mediaSource: coastalVideo,
         author: "Jonah Reed",
-        publishedAt: "January 11, 2027",
+        publishedAt: "January 11, 2026",
         category: "Methods interview",
         duration: "24:18",
         alt: "Dark evergreen forest softened by winter mist",
@@ -353,7 +371,7 @@ export const seasons: Record<SeasonSlug, SeasonDefinition> = {
   },
 };
 
-const articleSets: Record<SeasonSlug, SeasonalArticle[]> = {
+const articleSets: Record<SeasonSlug, SeasonalArticleInput[]> = {
   spring: [
     {
       slug: "the-restorative-hour",
@@ -540,7 +558,7 @@ const articleSets: Record<SeasonSlug, SeasonalArticle[]> = {
       excerpt:
         "Pain is real, biological, and influenced by more than tissue damage. That complexity should expand care—not diminish it.",
       author: "Dr. Elias Wynn",
-      publishedAt: "October 08, 2026",
+      publishedAt: "October 08, 2025",
       readingTime: "13 min read",
       category: "Medicine",
       featuredImage: images.amberForest,
@@ -585,7 +603,7 @@ const articleSets: Record<SeasonSlug, SeasonalArticle[]> = {
       excerpt:
         "A careful history is diagnostic work. What happens when the schedule makes that work nearly impossible?",
       author: "Mara Vale",
-      publishedAt: "October 22, 2026",
+      publishedAt: "October 22, 2025",
       readingTime: "10 min read",
       category: "Care systems",
       featuredImage: images.desert,
@@ -625,7 +643,7 @@ const articleSets: Record<SeasonSlug, SeasonalArticle[]> = {
       excerpt:
         "A study can be statistically persuasive and clinically modest—or genuinely important while still uncertain.",
       author: "Jonah Reed",
-      publishedAt: "January 08, 2027",
+      publishedAt: "January 08, 2026",
       readingTime: "12 min read",
       category: "Research methods",
       featuredImage: images.mountain,
@@ -670,7 +688,7 @@ const articleSets: Record<SeasonSlug, SeasonalArticle[]> = {
       excerpt:
         "Combining weak, narrow, or inconsistent studies does not automatically produce a complete answer.",
       author: "XYLENS Research Desk",
-      publishedAt: "January 21, 2027",
+      publishedAt: "January 21, 2026",
       readingTime: "10 min read",
       category: "Evidence review",
       featuredImage: images.winterForest,
@@ -702,8 +720,66 @@ const articleSets: Record<SeasonSlug, SeasonalArticle[]> = {
   ],
 };
 
+function toISODate(value: string) {
+  return new Date(`${value} 12:00:00 UTC`).toISOString().slice(0, 10);
+}
+
+function resolveEvidenceStatus(article: SeasonalArticleInput): EvidenceStatus {
+  const label = `${article.category} ${article.title}`.toLowerCase();
+  if (label.includes("evidence") || label.includes("research")) {
+    return "Evidence Review";
+  }
+  if (article.category === "Medicine") {
+    return "Research Update";
+  }
+  return "Research Update";
+}
+
+function publishArticle(article: SeasonalArticleInput): SeasonalArticle {
+  const evidenceStatus = resolveEvidenceStatus(article);
+  const reviewedAt = article.publishedAt;
+  const published: SeasonalArticle = {
+    ...article,
+    status: "published",
+    visibility: "public",
+    contentType: article.category,
+    evidenceStatus,
+    evidenceDefinition: evidenceStatusDefinitions[evidenceStatus],
+    reviewer: "XYLENS Editorial Desk",
+    reviewerRole: "Editorial review",
+    reviewedAt,
+    publishedAtISO: toISODate(article.publishedAt),
+    reviewedAtISO: toISODate(reviewedAt),
+    takeaway: article.excerpt,
+    keyFindings: [
+      article.subtitle,
+      "The practical meaning depends on context, access, and the individual.",
+      "The claim should remain proportional to the evidence described.",
+    ],
+    limitations: [
+      "This article is educational journalism and cannot account for an individual medical history or examination.",
+      "Source coverage and interpretation should be revisited as stronger evidence becomes available.",
+    ],
+    reviewMethod:
+      "Editorial synthesis of the stated topic, reviewed for clarity, proportional language, internal consistency, and visible limitations.",
+    citations: [],
+    disclosures: ["No commercial sponsorship is represented in this edition."],
+    correctionHistory: [
+      {
+        version: "1.0",
+        date: reviewedAt,
+        summary: "Initial public edition.",
+      },
+    ],
+    seoTitle: article.title,
+    seoDescription: article.excerpt,
+  };
+  assertPublicRecord(published);
+  return published;
+}
+
 for (const slug of seasonOrder) {
-  seasons[slug].articles = articleSets[slug];
+  seasons[slug].articles = articleSets[slug].map(publishArticle);
 }
 
 export function isSeasonSlug(value: string): value is SeasonSlug {
@@ -714,11 +790,21 @@ export function getSeasonArticle(
   season: SeasonSlug,
   slug: string,
 ): SeasonalArticle | undefined {
-  return seasons[season].articles.find((article) => article.slug === slug);
+  return seasons[season].articles.find(
+    (article) =>
+      article.slug === slug &&
+      article.status === "published" &&
+      article.visibility === "public",
+  );
 }
 
 export function getAllArticles() {
-  return seasonOrder.flatMap((season) => seasons[season].articles);
+  return seasonOrder
+    .flatMap((season) => seasons[season].articles)
+    .filter(
+      (article) =>
+        article.status === "published" && article.visibility === "public",
+    );
 }
 
 export function getRelatedArticles(article: SeasonalArticle) {

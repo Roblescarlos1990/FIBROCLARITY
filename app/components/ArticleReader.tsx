@@ -6,6 +6,7 @@ import type {
   SeasonDefinition,
   SeasonalArticle,
 } from "../seasons/data";
+import { siteUrl } from "../site";
 
 type ArticleReaderProps = {
   article: SeasonalArticle;
@@ -24,8 +25,28 @@ export default function ArticleReader({
   next,
   seasonPosition,
 }: ArticleReaderProps) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.seoDescription,
+    image: article.featuredImage,
+    datePublished: article.publishedAtISO,
+    dateModified: article.reviewedAtISO,
+    author: { "@type": "Person", name: article.author },
+    publisher: { "@type": "Organization", name: "XYLENS" },
+    mainEntityOfPage: `${siteUrl}/journal/${article.slug}`,
+  };
+
   return (
-    <main className={`article-reader season-${season.slug}`}>
+    <main
+      id="main-content"
+      className={`article-reader season-${season.slug}`}
+    >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <SeasonHeader activeSeason={season.slug} compact />
 
       <section className="article-hero">
@@ -50,7 +71,8 @@ export default function ArticleReader({
           <strong>{article.subtitle}</strong>
           <div className="article-hero-meta">
             <span>By {article.author}</span>
-            <span>{article.publishedAt}</span>
+            <span>Published {article.publishedAt}</span>
+            <span>Reviewed {article.reviewedAt}</span>
             <span>{article.readingTime}</span>
           </div>
         </div>
@@ -66,10 +88,56 @@ export default function ArticleReader({
             Evidence and interpretation are identified separately. Uncertainty
             remains visible.
           </p>
+          <dl className="article-record-mini">
+            <div>
+              <dt>Evidence status</dt>
+              <dd>{article.evidenceStatus}</dd>
+            </div>
+            <div>
+              <dt>Reviewer</dt>
+              <dd>{article.reviewer}</dd>
+            </div>
+            <div>
+              <dt>Review role</dt>
+              <dd>{article.reviewerRole}</dd>
+            </div>
+          </dl>
           <ArticleShare title={article.title} />
         </aside>
 
         <article className="article-body-copy">
+          <section className="article-takeaway" aria-labelledby="takeaway-title">
+            <span id="takeaway-title">One-sentence takeaway</span>
+            <p>{article.takeaway}</p>
+          </section>
+
+          <section className="article-evidence-record">
+            <div className="evidence-record-heading">
+              <span title={article.evidenceDefinition}>
+                {article.evidenceStatus}
+              </span>
+              <p>{article.evidenceDefinition}</p>
+            </div>
+            <div className="evidence-record-columns">
+              <div>
+                <h2>Essential findings</h2>
+                <ol>
+                  {article.keyFindings.map((finding) => (
+                    <li key={finding}>{finding}</li>
+                  ))}
+                </ol>
+              </div>
+              <div className="evidence-limitations">
+                <h2>Limitations</h2>
+                <ul>
+                  {article.limitations.map((limitation) => (
+                    <li key={limitation}>{limitation}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </section>
+
           <p className="article-standfirst">{article.excerpt}</p>
           {article.content.map((block, index) => {
             if (block.type === "heading") {
@@ -100,11 +168,45 @@ export default function ArticleReader({
             return <p key={`${block.type}-${index}`}>{block.text}</p>;
           })}
 
+          <div className="article-depth-record">
+            <details>
+              <summary>Review approach</summary>
+              <p>{article.reviewMethod}</p>
+            </details>
+            {article.citations.length > 0 && (
+              <details>
+                <summary>Sources and stable links</summary>
+                <ol>
+                  {article.citations.map((citation) => (
+                    <li key={citation.id}>
+                      <a href={citation.href}>{citation.label}</a>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            )}
+            <details>
+              <summary>Disclosures and version history</summary>
+              {article.disclosures.map((disclosure) => (
+                <p key={disclosure}>{disclosure}</p>
+              ))}
+              <ul>
+                {article.correctionHistory.map((correction) => (
+                  <li key={`${correction.version}-${correction.date}`}>
+                    <strong>Version {correction.version}</strong> ·{" "}
+                    {correction.date} — {correction.summary}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </div>
+
           <div className="article-disclaimer">
-            <span>Editorial note</span>
+            <span>Medical information</span>
             <p>
               This story is educational journalism and is not a substitute for
-              individualized medical advice, diagnosis, or treatment.
+              individualized medical advice, diagnosis, or treatment.{" "}
+              <Link href="/medical-disclaimer">Read the full boundary.</Link>
             </p>
           </div>
         </article>
@@ -119,7 +221,7 @@ export default function ArticleReader({
           <div className="related-story-grid">
             {related.map((story) => (
               <Link
-                href={`/seasons/${season.slug}/articles/${story.slug}`}
+                href={`/journal/${story.slug}`}
                 key={story.slug}
               >
                 <span className="related-story-image">
@@ -142,13 +244,13 @@ export default function ArticleReader({
 
       <nav className="article-pagination" aria-label="Article navigation">
         <Link
-          href={`/seasons/${season.slug}/articles/${previous.slug}`}
+          href={`/journal/${previous.slug}`}
           rel="prev"
         >
           <span>← Previous story</span>
           <strong>{previous.title}</strong>
         </Link>
-        <Link href={`/seasons/${season.slug}/articles/${next.slug}`} rel="next">
+        <Link href={`/journal/${next.slug}`} rel="next">
           <span>Next story →</span>
           <strong>{next.title}</strong>
         </Link>

@@ -50,6 +50,7 @@ export default function SeasonPage({ season }: SeasonPageProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [activeArticle, setActiveArticle] = useState(0);
+  const [activeMedia, setActiveMedia] = useState(0);
   const mediaRailRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
@@ -68,6 +69,7 @@ export default function SeasonPage({ season }: SeasonPageProps) {
   const openMedia = (index: number) => {
     returnFocusRef.current = document.activeElement as HTMLElement;
     setGalleryIndex(0);
+    setActiveMedia(index);
     setSelectedIndex(index);
   };
 
@@ -130,10 +132,47 @@ export default function SeasonPage({ season }: SeasonPageProps) {
   }, [season.media.length, selectedIndex]);
 
   const moveRail = (direction: -1 | 1) => {
-    mediaRailRef.current?.scrollBy({
-      left: direction * Math.min(window.innerWidth * 0.72, 760),
-      behavior: "smooth",
+    setActiveMedia((current) => {
+      const next = Math.max(
+        0,
+        Math.min(season.media.length - 1, current + direction),
+      );
+      const card = mediaRailRef.current?.children[next] as HTMLElement | undefined;
+      card?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+      return next;
     });
+  };
+
+  const selectMediaPosition = (index: number) => {
+    setActiveMedia(index);
+    const card = mediaRailRef.current?.children[index] as HTMLElement | undefined;
+    card?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  };
+
+  const syncRailPosition = () => {
+    const rail = mediaRailRef.current;
+    if (!rail) return;
+    const cards = Array.from(rail.children) as HTMLElement[];
+    const railCenter = rail.getBoundingClientRect().left + rail.clientWidth / 2;
+    let closest = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+    cards.forEach((card, index) => {
+      const bounds = card.getBoundingClientRect();
+      const distance = Math.abs(bounds.left + bounds.width / 2 - railCenter);
+      if (distance < closestDistance) {
+        closest = index;
+        closestDistance = distance;
+      }
+    });
+    setActiveMedia(closest);
   };
 
   const onRailKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -145,6 +184,7 @@ export default function SeasonPage({ season }: SeasonPageProps) {
 
   return (
     <main
+      id="main-content"
       className={`season-page season-${season.slug}`}
       style={
         {
@@ -218,6 +258,7 @@ export default function SeasonPage({ season }: SeasonPageProps) {
           ref={mediaRailRef}
           tabIndex={0}
           onKeyDown={onRailKeyDown}
+          onScroll={syncRailPosition}
           aria-label={`${season.label} featured media`}
         >
           {season.media.map((item, index) => (
@@ -258,9 +299,16 @@ export default function SeasonPage({ season }: SeasonPageProps) {
           ))}
         </div>
 
-        <div className="media-pagination" aria-hidden="true">
+        <div className="media-pagination" aria-label="Media position">
           {season.media.map((item, index) => (
-            <i key={item.id} className={index === 0 ? "is-active" : ""} />
+            <button
+              type="button"
+              key={item.id}
+              className={index === activeMedia ? "is-active" : ""}
+              aria-current={index === activeMedia ? "true" : undefined}
+              aria-label={`Show media ${index + 1} of ${season.media.length}`}
+              onClick={() => selectMediaPosition(index)}
+            />
           ))}
         </div>
       </section>
@@ -292,15 +340,18 @@ export default function SeasonPage({ season }: SeasonPageProps) {
               <p>
                 {currentArticle.category} · {currentArticle.readingTime}
               </p>
+              <span className="story-evidence-status">
+                {currentArticle.evidenceStatus}
+              </span>
               <h3>{currentArticle.title}</h3>
               <strong>{currentArticle.subtitle}</strong>
               <span>{currentArticle.excerpt}</span>
               <div className="active-story-byline">
                 <span>By {currentArticle.author}</span>
-                <span>{currentArticle.publishedAt}</span>
+                <span>Reviewed {currentArticle.reviewedAt}</span>
               </div>
               <Link
-                href={`/seasons/${season.slug}/articles/${currentArticle.slug}`}
+                href={`/journal/${currentArticle.slug}`}
               >
                 Read the full story <Arrow />
               </Link>
@@ -420,12 +471,15 @@ export default function SeasonPage({ season }: SeasonPageProps) {
                   aria-label={selectedMedia.title}
                 >
                   <source src={selectedMedia.mediaSource} type="video/mp4" />
-                  <track
-                    kind="captions"
-                    src="/captions/placeholder.vtt"
-                    srcLang="en"
-                    label="English captions placeholder"
-                  />
+                  {selectedMedia.captionSource && (
+                    <track
+                      kind="captions"
+                      src={selectedMedia.captionSource}
+                      srcLang="en"
+                      label="English captions"
+                      default
+                    />
+                  )}
                   Your browser does not support HTML video.
                 </video>
               ) : (
@@ -493,9 +547,22 @@ export default function SeasonPage({ season }: SeasonPageProps) {
                 <p>{selectedMedia.description}</p>
                 <span>
                   By {selectedMedia.author} · {selectedMedia.publishedAt}
+                  <br />
+                  Credit: {selectedMedia.credit || selectedMedia.author}
                 </span>
               </div>
             </div>
+            {(selectedMedia.type === "video" ||
+              selectedMedia.type === "interview" ||
+              selectedMedia.type === "documentary") && (
+              <details className="viewer-transcript">
+                <summary>Transcript and accessibility note</summary>
+                <p>
+                  {selectedMedia.transcript ||
+                    "This temporary media preview is illustrative. A verified transcript and captions must accompany final editorial media before publication."}
+                </p>
+              </details>
+            )}
           </div>
         </div>
       )}

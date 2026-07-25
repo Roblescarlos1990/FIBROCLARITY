@@ -1,10 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import IntroSequence from "./IntroSequence";
 import LivingLensScene, { type SeasonKey } from "./LivingLensScene";
 import { navigateWithTransition } from "./RouteTransition";
+import { EditorialFooter } from "./components/EditorialChrome";
 import { articles, lensCopy, type Lens } from "./content";
 import { foundation, type FoundationLens } from "./foundation";
 
@@ -39,9 +41,9 @@ const weatherCopy: Record<
 function Brand() {
   const { company, publication } = foundation;
   return (
-    <a
+    <Link
       className="brand"
-      href="#top"
+      href="/"
       aria-label={`${company.short_name} home`}
     >
       <span className="brand-mark" aria-hidden="true">
@@ -56,7 +58,7 @@ function Brand() {
         <strong>{company.short_name}</strong>
         <small>{publication.masthead}</small>
       </span>
-    </a>
+    </Link>
   );
 }
 
@@ -73,7 +75,6 @@ export default function Home() {
   const [activeSeason, setActiveSeason] = useState<SeasonKey>("summer");
   const [activeCategory, setActiveCategory] = useState<"All" | Lens>("All");
   const [query, setQuery] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
 
   const seasonIndex = seasonOptions.findIndex(
     (item) => item.key === activeSeason,
@@ -107,7 +108,7 @@ export default function Home() {
     <>
       {!introComplete && <IntroSequence onComplete={completeIntro} />}
     <main
-      id="top"
+      id="main-content"
       className="site-shell"
       data-season={activeSeason}
       data-template={foundation.project.template_id}
@@ -124,17 +125,17 @@ export default function Home() {
           <Brand />
           <nav className="primary-nav" aria-label="Primary navigation">
             {foundation.publication.primary_navigation.map((item) => (
-              <a href={item.target} key={item.target}>
+              <Link href={item.target} key={item.target}>
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
-          <a
+          <Link
             className="header-action"
             href={foundation.publication.header_action.target}
           >
             {foundation.publication.header_action.label} <Arrow />
-          </a>
+          </Link>
         </header>
 
         <div className="hero-grid">
@@ -152,9 +153,9 @@ export default function Home() {
               <a className="button button-primary" href="#journal">
                 {foundation.publication.hero.primary_action} <Arrow />
               </a>
-              <a className="text-link" href="#standard">
+              <Link className="text-link" href="/editorial-standards">
                 {foundation.publication.hero.secondary_action}
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -240,9 +241,12 @@ export default function Home() {
               </div>
               <h3>{featured[0].title}</h3>
               <p>{featured[0].dek}</p>
-              <a href="#library" aria-label={`Read ${featured[0].title}`}>
+              <Link
+                href="/evidence-reviews"
+                aria-label={`Read ${featured[0].title}`}
+              >
                 Read the evidence review <Arrow />
-              </a>
+              </Link>
             </div>
           </article>
 
@@ -264,9 +268,9 @@ export default function Home() {
                   </div>
                   <h3>{article.title}</h3>
                   <p>{article.dek}</p>
-                  <a href="#library" aria-label={`Read ${article.title}`}>
+                  <Link href="/journal" aria-label={`Read ${article.title}`}>
                     Explore <Arrow />
-                  </a>
+                  </Link>
                 </div>
               </article>
             ))}
@@ -357,9 +361,18 @@ export default function Home() {
               <div className="article-tail">
                 <span>{article.date}</span>
                 <span>{article.readTime}</span>
-                <a href="#standard" aria-label={`Open ${article.title}`}>
+                <Link
+                  href={
+                    article.category === "Research"
+                      ? "/evidence-reviews"
+                      : article.category === "Wellness"
+                        ? "/wellness"
+                        : "/journal"
+                  }
+                  aria-label={`Open ${article.title}`}
+                >
                   <Arrow />
-                </a>
+                </Link>
               </div>
             </article>
           ))}
@@ -389,9 +402,12 @@ export default function Home() {
             curiosity—along with explicit sourcing, careful language, and a
             visible line between evidence, interpretation, and possibility.
           </p>
-          <a className="button button-outline" href="#newsletter">
+          <Link
+            className="button button-outline"
+            href="/editorial-standards"
+          >
             How we review a story <Arrow />
-          </a>
+          </Link>
         </div>
         <div className="standard-ledger">
           <div className="ledger-head">
@@ -449,49 +465,20 @@ export default function Home() {
             One important study, one restorative idea, and one observation from
             the living world. No panic. No miracle language.
           </p>
-          {subscribed ? (
-            <div className="subscribe-success" role="status">
-              You’re on the list. Watch the seasons.
-            </div>
-          ) : (
-            <form
-              className="subscribe-form"
-              onSubmit={(event) => {
-                event.preventDefault();
-                setSubscribed(true);
-              }}
-            >
-              <label>
-                <span className="sr-only">Email address</span>
-                <input type="email" required placeholder="Your email address" />
-              </label>
-              <button type="submit">
-                Join Field Notes <Arrow />
-              </button>
-            </form>
-          )}
-          <small>Unsubscribe anytime. Your attention stays yours.</small>
+          <div className="newsletter-boundary">
+            <span>Subscription opens after privacy review.</span>
+            <Link href="/contact">
+              Contact the editorial desk <Arrow />
+            </Link>
+          </div>
+          <small>
+            We do not collect email addresses until the production provider is
+            configured.
+          </small>
         </div>
       </section>
 
-      <footer className="site-footer">
-        <Brand />
-        <div className="footer-links">
-          <a href="#journal">Journal</a>
-          <a href="#standard">Editorial standard</a>
-          <a href="#newsletter">Newsletter</a>
-          <a href="#top">Back to top ↑</a>
-        </div>
-        <div className="footer-bottom">
-          <p>
-            {foundation.publication.editorial_disclaimer}
-          </p>
-          <span>
-            © 2026 {foundation.company.short_name} ·{" "}
-            {foundation.company.service_area}
-          </span>
-        </div>
-      </footer>
+      <EditorialFooter />
     </main>
     </>
   );

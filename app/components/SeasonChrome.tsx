@@ -62,11 +62,21 @@ export function SeasonFooter({ activeSeason }: { activeSeason: SeasonSlug }) {
         </strong>
       </Link>
       <div className="season-footer-legal">
-        <p>
-          Educational journalism, not individualized medical advice, diagnosis,
-          or treatment.
-        </p>
-        <span>© 2026 XYLENS · San Diego, California</span>
+        <nav aria-label="Editorial and legal information">
+          <Link href="/editorial-standards">Editorial standards</Link>
+          <Link href="/evidence-method">Evidence method</Link>
+          <Link href="/corrections">Corrections</Link>
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/accessibility">Accessibility</Link>
+          <Link href="/medical-disclaimer">Medical information</Link>
+        </nav>
+        <div>
+          <p>
+            Educational journalism, not individualized medical advice,
+            diagnosis, or treatment.
+          </p>
+          <span>© 2026 XYLENS · San Diego, California</span>
+        </div>
       </div>
     </footer>
   );

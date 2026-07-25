@@ -65,7 +65,15 @@ function resolveTheme(pathname: string) {
   const season = Object.keys(themes).find(
     (key) => key !== "journal" && pathname.includes(`/seasons/${key}`),
   );
-  return themes[season || "journal"];
+  if (season) return themes[season];
+  if (pathname === "/wellness") return themes.spring;
+  if (pathname === "/research" || pathname === "/evidence-reviews") {
+    return themes.winter;
+  }
+  if (pathname === "/journal" || pathname.startsWith("/journal/")) {
+    return themes.summer;
+  }
+  return themes.journal;
 }
 
 export function navigateWithTransition(href: string) {
