@@ -101,7 +101,7 @@ export default function RouteTransition() {
     enterTimerRef.current = window.setTimeout(() => {
       phaseRef.current = "idle";
       setPhase("idle");
-    }, 920);
+    }, 780);
 
     return () => {
       if (enterTimerRef.current) window.clearTimeout(enterTimerRef.current);
@@ -127,9 +127,9 @@ export default function RouteTransition() {
           window.setTimeout(() => {
             phaseRef.current = "idle";
             setPhase("idle");
-          }, 900);
-        }, 2200);
-      }, 680);
+          }, 780);
+        }, 1800);
+      }, 460);
     };
 
     const onDocumentClick = (event: MouseEvent) => {
@@ -197,16 +197,19 @@ export default function RouteTransition() {
       style={transitionStyle}
       aria-hidden="true"
     >
-      <span className="route-shutter route-shutter-one" />
-      <span className="route-shutter route-shutter-two" />
-      <span className="route-shutter route-shutter-three" />
-      <div className="route-transition-lockup">
-        <span className="route-transition-rule" />
-        <Image src="/xylens-lens-mark.svg" alt="" width={84} height={84} />
-        <strong>XYLENS</strong>
-        <small>{theme.label}</small>
+      <div className="route-transition-surface">
+        <span className="route-flow route-flow-primary" />
+        <span className="route-flow route-flow-secondary" />
+        <span className="route-flow-glint" />
       </div>
-      <p>Refocusing the journal</p>
+      <div className="route-transition-lockup">
+        <Image src="/xylens-lens-mark.svg" alt="" width={84} height={84} />
+        <div>
+          <small>Refocusing</small>
+          <strong>{theme.label}</strong>
+        </div>
+      </div>
+      <span className="route-transition-progress" />
     </div>
   );
 }
