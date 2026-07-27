@@ -45,10 +45,31 @@ for possible Blender/GLB exploration. It is not imported by the live website.
 /terms
 /accessibility
 /medical-disclaimer
+/admin
 ```
 
 All public information and article routes are statically generated. Canonical
 long-form writing lives at `/journal/[slug]`.
+
+## Admin Studio
+
+`/admin` opens the XYLENS editorial workspace. The first release includes:
+
+- a dashboard for publication health and content status;
+- page, section, and individual tile editing;
+- native drag-to-reorder sections and add-section patterns;
+- article, media, inbox, traffic, navigation, and settings workspaces;
+- browser autosave, manual checkpoints, JSON import/export, and draft preview;
+- explicit integration states for authentication, storage, email, and analytics.
+
+Until authenticated shared storage is connected, admin edits remain browser-local
+and the production publish control stays locked. This is intentional: the admin
+does not present preview data as live traffic or simulate a production inbox.
+The route is marked `noindex` and excluded in `robots.txt`, but it must not hold
+sensitive or patient information before production authentication is enabled.
+
+Production publishing remains locked until a private authentication layer,
+shared content database, and server-side publishing adapter are connected.
 
 ## Development
 
