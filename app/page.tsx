@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import IntroSequence from "./IntroSequence";
 import LivingLensScene from "./LivingLensScene";
 import { EditorialFooter } from "./components/EditorialChrome";
@@ -53,6 +53,12 @@ export default function Home() {
 
   const featured = articles.filter((article) => article.featured);
   const completeIntro = useCallback(() => setIntroComplete(true), []);
+
+  useEffect(() => {
+    const replayIntro = () => setIntroComplete(false);
+    window.addEventListener("xylens:replay-intro", replayIntro);
+    return () => window.removeEventListener("xylens:replay-intro", replayIntro);
+  }, []);
 
   const filteredArticles = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();

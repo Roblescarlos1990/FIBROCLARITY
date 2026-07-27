@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import IntroReplayButton from "./IntroReplayButton";
 
 const primaryLinks = [
   { href: "/journal", label: "Journal" },
@@ -77,7 +78,19 @@ export function EditorialFooter() {
           Educational journalism—not individualized medical advice, diagnosis,
           or treatment.
         </p>
-        <span>© 2026 XYLENS · San Diego, California</span>
+        <div className="editorial-footer-meta">
+          <span>© 2026 XYLENS · San Diego, California</span>
+          <div className="footer-platform-signature">
+            <Image
+              src="/voltflow-signature-primary.jpg"
+              alt=""
+              width={1232}
+              height={832}
+            />
+            <span>Powered by VoltFlow</span>
+            <IntroReplayButton />
+          </div>
+        </div>
       </div>
     </footer>
   );

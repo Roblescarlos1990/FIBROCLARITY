@@ -18,10 +18,17 @@ faceted evidence core, botanical specimen fragments, droplets, and atmospheric
 particles. Pointer movement alters the composition without sacrificing its
 light coastal palette.
 
-Internal navigation uses a destination-aware cinematic shutter transition, and
-the full opening ident plays once per browser session. Homepage, article,
-evidence, and related-story surfaces share a refined glass-and-metal editorial
-tile system.
+Internal navigation uses a destination-aware cinematic shutter transition.
+The full opening ident now reconstructs the XYLENS identity inside a restrained
+Three.js deep-network environment, resolves the trademark and publication
+slogan, and introduces VoltFlow as the platform signature before dissolving
+into the existing light homepage. It plays once per browser session and can be
+replayed from the footer.
+
+The intro includes keyboard entry, a visible skip control, reduced-motion
+behavior, a static no-WebGL fallback, mobile point-count limits, and no audible
+autoplay. Homepage, article, evidence, and related-story surfaces continue to
+share the light glass-and-metal editorial tile system.
 
 The previous oak prototype remains in `app/OakScene.tsx` as an inactive concept
 for possible Blender/GLB exploration. It is not imported by the live website.
