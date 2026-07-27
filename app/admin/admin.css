@@ -216,6 +216,25 @@
   color: #f2dfad;
 }
 
+.admin-sidebar-foot > button {
+  margin-top: 11px;
+  padding: 0;
+  color: rgba(223, 234, 229, 0.42);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-sidebar-foot > button:hover,
+.admin-sidebar-foot > button:focus-visible {
+  color: #f2dfad;
+  outline: none;
+}
+
 .admin-workspace {
   min-height: 100vh;
   margin-left: 246px;
@@ -2749,7 +2768,8 @@
   }
 
   .admin-sidebar-foot > div,
-  .admin-sidebar-foot > a {
+  .admin-sidebar-foot > a,
+  .admin-sidebar-foot > button {
     display: none;
   }
 

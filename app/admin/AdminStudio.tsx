@@ -794,6 +794,17 @@ export default function AdminStudio({
           <Link href="/" target="_blank">
             View site ↗
           </Link>
+          <button
+            type="button"
+            onClick={() => {
+              window.sessionStorage.removeItem("xylens:admin-intro-seen");
+              window.dispatchEvent(
+                new CustomEvent("xylens:replay-admin-intro"),
+              );
+            }}
+          >
+            Replay studio opening ◌
+          </button>
         </div>
       </aside>
 

@@ -1,7 +1,7 @@
-import AdminStudio from "./AdminStudio";
+import AdminEntry from "./AdminEntry";
 
 export const dynamic = "force-dynamic";
 
 export default function AdminPage() {
-  return <AdminStudio publishingConfigured={false} />;
+  return <AdminEntry publishingConfigured={false} />;
 }
