@@ -28,6 +28,9 @@ type TransitionCssProperties = CSSProperties & {
   "--route-wash": string;
 };
 
+const LEAVE_DURATION = 520;
+const ENTER_DURATION = 820;
+
 const themes: Record<string, TransitionTheme> = {
   wellness: {
     label: "XYLENS · Wellness",
@@ -86,6 +89,7 @@ export default function RouteTransition() {
   const leaveTimerRef = useRef<number | null>(null);
   const enterTimerRef = useRef<number | null>(null);
   const failsafeTimerRef = useRef<number | null>(null);
+  const failsafeEnterTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (previousPathRef.current === pathname) return;
@@ -98,10 +102,15 @@ export default function RouteTransition() {
       window.clearTimeout(failsafeTimerRef.current);
       failsafeTimerRef.current = null;
     }
+    const enterDuration = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches
+      ? 0
+      : ENTER_DURATION;
     enterTimerRef.current = window.setTimeout(() => {
       phaseRef.current = "idle";
       setPhase("idle");
-    }, 780);
+    }, enterDuration);
 
     return () => {
       if (enterTimerRef.current) window.clearTimeout(enterTimerRef.current);
@@ -115,6 +124,18 @@ export default function RouteTransition() {
       if (phaseRef.current !== "idle") return;
 
       const destination = `${url.pathname}${url.search}${url.hash}`;
+      const currentDocument = `${window.location.pathname}${window.location.search}`;
+      if (`${url.pathname}${url.search}` === currentDocument) {
+        router.push(destination);
+        return;
+      }
+
+      const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      const leaveDuration = reducedMotion ? 0 : LEAVE_DURATION;
+      const enterDuration = reducedMotion ? 0 : ENTER_DURATION;
+
       phaseRef.current = "leaving";
       setTheme(resolveTheme(url.pathname));
       setPhase("leaving");
@@ -124,12 +145,12 @@ export default function RouteTransition() {
         failsafeTimerRef.current = window.setTimeout(() => {
           phaseRef.current = "entering";
           setPhase("entering");
-          window.setTimeout(() => {
+          failsafeEnterTimerRef.current = window.setTimeout(() => {
             phaseRef.current = "idle";
             setPhase("idle");
-          }, 780);
+          }, enterDuration);
         }, 1800);
-      }, 460);
+      }, leaveDuration);
     };
 
     const onDocumentClick = (event: MouseEvent) => {
@@ -150,7 +171,8 @@ export default function RouteTransition() {
       if (
         !anchor ||
         anchor.target === "_blank" ||
-        anchor.hasAttribute("download")
+        anchor.hasAttribute("download") ||
+        anchor.closest("[data-no-route-transition]")
       ) {
         return;
       }
@@ -181,6 +203,9 @@ export default function RouteTransition() {
       if (enterTimerRef.current) window.clearTimeout(enterTimerRef.current);
       if (failsafeTimerRef.current) {
         window.clearTimeout(failsafeTimerRef.current);
+      }
+      if (failsafeEnterTimerRef.current) {
+        window.clearTimeout(failsafeEnterTimerRef.current);
       }
     };
   }, [router]);
