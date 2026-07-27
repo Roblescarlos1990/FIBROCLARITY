@@ -2,12 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import IntroSequence from "./IntroSequence";
-import LivingLensScene from "./LivingLensScene";
 import { EditorialFooter } from "./components/EditorialChrome";
 import { articles, type Lens } from "./content";
 import { foundation } from "./foundation";
+
+const LivingLensHero = lazy(() => import("./LivingLensHero"));
+const livingLensPoster =
+  "/assets/xylens/living-lens/XYLENS_Living_Lens_Poster.webp";
 
 const categories = [
   "All",
@@ -43,6 +46,29 @@ function Arrow() {
     <span className="arrow" aria-hidden="true">
       ↗
     </span>
+  );
+}
+
+function LivingLensLoadingPoster() {
+  return (
+    <div
+      className="living-lens-visual"
+      data-render-state="poster"
+      aria-hidden="true"
+    >
+      <span className="living-lens-halo" />
+      <picture className="living-lens-poster">
+        <img
+          src={livingLensPoster}
+          alt=""
+          width="1920"
+          height="1080"
+          decoding="async"
+          fetchPriority="high"
+          draggable="false"
+        />
+      </picture>
+    </div>
   );
 }
 
@@ -123,9 +149,11 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="lens-stage">
-            <LivingLensScene season="summer" />
-            <div className="lens-caption">
+          <div className="lens-stage living-lens-stage">
+            <Suspense fallback={<LivingLensLoadingPoster />}>
+              <LivingLensHero />
+            </Suspense>
+            <div className="lens-caption lens-caption-desktop">
               <span>XYL / 01</span>
               <p>
                 Living Lens
@@ -143,6 +171,13 @@ export default function Home() {
               </p>
             </div>
           </div>
+        </div>
+        <div className="lens-caption lens-caption-mobile">
+          <span>XYL / 01</span>
+          <p>
+            Living Lens
+            <small>Evidence in focus</small>
+          </p>
         </div>
       </section>
 

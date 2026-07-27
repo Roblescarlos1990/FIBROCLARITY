@@ -12,6 +12,7 @@ export default defineConfig([
     "build/**",
     "worker/**",
     "examples/**",
+    "public/assets/xylens/living-lens/draco/**",
     "next-env.d.ts",
   ]),
 ]);
