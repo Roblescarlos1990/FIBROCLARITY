@@ -30,6 +30,15 @@ export const metadata: Metadata = {
     url: "/",
     siteName: foundation.company.short_name,
   },
+  twitter: {
+    card: "summary_large_image",
+    title: `${foundation.company.short_name} | ${foundation.publication.masthead}`,
+    description: foundation.company.region_description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   keywords: [
     "medicine",
     "wellness",
@@ -57,6 +66,22 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: foundation.company.short_name,
+              url: siteUrl,
+              description: foundation.company.region_description,
+              publisher: {
+                "@type": "Organization",
+                name: foundation.company.short_name,
+              },
+            }),
+          }}
+        />
         <a className="skip-link" href="#main-content">
           Skip to main content
         </a>

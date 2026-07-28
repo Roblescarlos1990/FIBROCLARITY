@@ -5,17 +5,18 @@ import Link from "next/link";
 import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import IntroSequence from "./IntroSequence";
 import { EditorialFooter } from "./components/EditorialChrome";
-import { articles, type Lens } from "./content";
 import { foundation } from "./foundation";
+import { getAllArticles } from "./seasons/data";
 
 const LivingLensHero = lazy(() => import("./LivingLensHero"));
 const livingLensPoster =
   "/assets/xylens/living-lens/XYLENS_Living_Lens_Poster.webp";
 
+const publishedArticles = getAllArticles();
 const categories = [
   "All",
-  ...Array.from(new Set(articles.map((article) => article.category))),
-] as Array<"All" | Lens>;
+  ...Array.from(new Set(publishedArticles.map((article) => article.category))),
+];
 
 function Brand() {
   const { company, publication } = foundation;
@@ -74,20 +75,20 @@ function LivingLensLoadingPoster() {
 
 export default function Home() {
   const [introComplete, setIntroComplete] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<"All" | Lens>("All");
+  const [activeCategory, setActiveCategory] = useState("All");
   const [query, setQuery] = useState("");
 
-  const featured = articles.filter((article) => article.featured);
+  const featured = publishedArticles.slice(0, 3);
   const completeIntro = useCallback(() => setIntroComplete(true), []);
 
   const filteredArticles = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    return articles.filter((article) => {
+    return publishedArticles.filter((article) => {
       const categoryMatch =
         activeCategory === "All" || article.category === activeCategory;
       const queryMatch =
         !normalizedQuery ||
-        `${article.title} ${article.dek} ${article.topic} ${article.category}`
+        `${article.title} ${article.subtitle} ${article.excerpt} ${article.category} ${article.evidenceStatus}`
           .toLowerCase()
           .includes(normalizedQuery);
       return categoryMatch && queryMatch;
@@ -217,12 +218,12 @@ export default function Home() {
             <div className="feature-content">
               <div className="article-meta">
                 <span>{featured[0].category}</span>
-                <span>{featured[0].readTime}</span>
+                <span>{featured[0].readingTime}</span>
               </div>
               <h3>{featured[0].title}</h3>
-              <p>{featured[0].dek}</p>
+              <p>{featured[0].excerpt}</p>
               <Link
-                href="/evidence-reviews"
+                href={`/journal/${featured[0].slug}`}
                 aria-label={`Read ${featured[0].title}`}
               >
                 Read the evidence review <Arrow />
@@ -243,12 +244,15 @@ export default function Home() {
                 </div>
                 <div className="feature-content">
                   <div className="article-meta">
-                    <span>{article.topic}</span>
-                    <span>{article.readTime}</span>
-                  </div>
-                  <h3>{article.title}</h3>
-                  <p>{article.dek}</p>
-                  <Link href="/journal" aria-label={`Read ${article.title}`}>
+                  <span>{article.evidenceStatus}</span>
+                  <span>{article.readingTime}</span>
+                </div>
+                <h3>{article.title}</h3>
+                <p>{article.excerpt}</p>
+                <Link
+                  href={`/journal/${article.slug}`}
+                  aria-label={`Read ${article.title}`}
+                >
                     Explore <Arrow />
                   </Link>
                 </div>
@@ -301,22 +305,16 @@ export default function Home() {
               <div className="article-body">
                 <div className="article-meta">
                   <span>{article.category}</span>
-                  <span>{article.topic}</span>
+                  <span>{article.evidenceStatus}</span>
                 </div>
                 <h3>{article.title}</h3>
-                <p>{article.dek}</p>
+                <p>{article.excerpt}</p>
               </div>
               <div className="article-tail">
-                <span>{article.date}</span>
-                <span>{article.readTime}</span>
+                <span>{article.publishedAt}</span>
+                <span>{article.readingTime}</span>
                 <Link
-                  href={
-                    article.category === "Research"
-                      ? "/evidence-reviews"
-                      : article.category === "Wellness"
-                        ? "/wellness"
-                        : "/journal"
-                  }
+                  href={`/journal/${article.slug}`}
                   aria-label={`Open ${article.title}`}
                 >
                   <Arrow />
